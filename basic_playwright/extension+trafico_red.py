@@ -27,7 +27,7 @@ async def run(playwright:Playwright):
     chromium = playwright.chromium
     context = await chromium.launch_persistent_context(user_data_path, headless=False, args=[f"--disable-extensions-except={path_to_extension}", f"--load-extension={path_to_extension}"])
     page = context.pages[0]
-
+    
     # Captamos las peticiones enviadas y respuestas recibidas por el servidor
     context.on("request", mostrar_peticiones)
     context.on("response", mostrar_respuestas)
