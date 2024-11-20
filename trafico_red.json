@@ -1,0 +1,128 @@
+[
+    {
+        "url": "https://cosec.inf.uc3m.es/",
+        "method": "GET",
+        "headers": {
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"129\", \"Not=A?Brand\";v=\"8\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\""
+        },
+        "body": null
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/",
+        "status": 200,
+        "headers": {
+            "content-encoding": "gzip",
+            "content-type": "text/html",
+            "date": "Wed, 20 Nov 2024 17:33:03 GMT",
+            "etag": "W/\"673b5d0d-d21\"",
+            "last-modified": "Mon, 18 Nov 2024 15:28:13 GMT",
+            "server": "nginx"
+        }
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/app.min.c1bd5b360b13830857ffb0f97b4b08d163a42420fa97dab631b0848791f1ff3e.css",
+        "method": "GET",
+        "headers": {
+            "origin": "https://cosec.inf.uc3m.es",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "referer": "https://cosec.inf.uc3m.es/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"129\", \"Not=A?Brand\";v=\"8\"",
+            "sec-ch-ua-mobile": "?0"
+        },
+        "body": null
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/logo.svg",
+        "method": "GET",
+        "headers": {
+            "sec-ch-ua-platform": "\"Windows\"",
+            "referer": "https://cosec.inf.uc3m.es/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"129\", \"Not=A?Brand\";v=\"8\"",
+            "sec-ch-ua-mobile": "?0"
+        },
+        "body": null
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/app.min.c1bd5b360b13830857ffb0f97b4b08d163a42420fa97dab631b0848791f1ff3e.css",
+        "status": 200,
+        "headers": {
+            "content-encoding": "gzip",
+            "etag": "\"673b5d0d-1ab5f-gzip\"",
+            "accept-ranges": "bytes",
+            "date": "Wed, 20 Nov 2024 17:33:03 GMT",
+            "content-type": "text/css",
+            "last-modified": "Mon, 18 Nov 2024 15:28:13 GMT",
+            "server": "nginx",
+            "vary": "Accept-Encoding"
+        }
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/logo.svg",
+        "status": 200,
+        "headers": {
+            "accept-ranges": "bytes",
+            "content-length": "8034",
+            "date": "Wed, 20 Nov 2024 17:33:04 GMT",
+            "etag": "\"673b5d0f-1f62\"",
+            "content-type": "image/svg+xml",
+            "last-modified": "Mon, 18 Nov 2024 15:28:15 GMT",
+            "server": "nginx"
+        }
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/landing.jpg",
+        "method": "GET",
+        "headers": {
+            "sec-ch-ua-platform": "\"Windows\"",
+            "referer": "https://cosec.inf.uc3m.es/app.min.c1bd5b360b13830857ffb0f97b4b08d163a42420fa97dab631b0848791f1ff3e.css",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"129\", \"Not=A?Brand\";v=\"8\"",
+            "sec-ch-ua-mobile": "?0"
+        },
+        "body": null
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/landing.jpg",
+        "status": 200,
+        "headers": {
+            "accept-ranges": "bytes",
+            "content-length": "399539",
+            "date": "Wed, 20 Nov 2024 17:33:04 GMT",
+            "etag": "\"673b5d0f-618b3\"",
+            "content-type": "image/jpeg",
+            "last-modified": "Mon, 18 Nov 2024 15:28:15 GMT",
+            "server": "nginx"
+        }
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/icon.png",
+        "method": "GET",
+        "headers": {
+            "sec-ch-ua-platform": "\"Windows\"",
+            "referer": "https://cosec.inf.uc3m.es/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"129\", \"Not=A?Brand\";v=\"8\"",
+            "sec-ch-ua-mobile": "?0"
+        },
+        "body": null
+    },
+    {
+        "url": "https://cosec.inf.uc3m.es/images/icon.png",
+        "status": 200,
+        "headers": {
+            "accept-ranges": "bytes",
+            "content-length": "1783",
+            "date": "Wed, 20 Nov 2024 17:33:04 GMT",
+            "etag": "\"673b5d0f-6f7\"",
+            "content-type": "image/png",
+            "last-modified": "Mon, 18 Nov 2024 15:28:15 GMT",
+            "server": "nginx"
+        }
+    }
+]
