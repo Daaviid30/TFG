@@ -6,16 +6,22 @@ path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interce
 user_data_path = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_path"
 
 def mostrar_initiator(request):
-    if request["initiator"]["type"] == "script":
-        try:
-            print(request["initiator"]["url"], request["initiator"]["type"], request["initiator"]["stack"])
-        except:
-            print(request["initiator"]["type"], request["initiator"]["stack"])
-
+    # URLs a filtrar
+    url_filtradas = ["google-analytics", "googletagmanager"]
+    
+    # Verifica si el tipo es "script" y que exista "stack" en el initiator
+    if request["initiator"]["type"] == "script" and "stack" in request["initiator"]:
+        call_frames = request["initiator"]["stack"].get("callFrames", [])
+        
+        # Recorre los callFrames y busca coincidencias
+        if not any(url in frame.get("url", "") for frame in call_frames for url in url_filtradas):
+            print(request["initiator"]["type"], call_frames)
+    
+    # Para otros tipos diferentes a "other"
     elif request["initiator"]["type"] != "other":
-        print(request["initiator"]["url"], request["initiator"]["type"])
-    else:
-        None
+        print(request["initiator"].get("url", "URL no disponible"), request["initiator"]["type"])
+
+
 
 
 async def run(playwright: Playwright):
