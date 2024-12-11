@@ -1,5 +1,5 @@
 from playwright.async_api import async_playwright, Playwright
-import asyncio, shutil
+import asyncio, shutil, os
 
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
 # Este será el path en el que amacenamos toda la informacion del usuario (contexto permanente)
@@ -42,6 +42,10 @@ async def run(playwright: Playwright):
 
     await page.wait_for_event("close", timeout=0)
     await context.close()
+
+    if not os.path.exists(user_data_path):
+        os.makedirs(user_data_path)
+
 
     shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_path")
 
