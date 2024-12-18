@@ -10,6 +10,9 @@ def info_peticiones(request):
 def info_pages(page):
     print(f"URL PAGE: {page['frame']['url']}, {page['frame']['mimeType']}")
 
+def info_target(target):
+    print(f"Tipo de target:{target['targetInfo']['type']}, URL: {target['targetInfo']['url']}")
+
 async def run(playwright: Playwright):
     contexto = await playwright.chromium.launch_persistent_context(user_data_dir, headless=False,\
                                                             args=[f"--disable-extensions-except={path_to_extension}", f"--load-extension={path_to_extension}"])
@@ -19,11 +22,14 @@ async def run(playwright: Playwright):
     cdp_sesion = await page.context.new_cdp_session(page)
     await cdp_sesion.send("Network.enable")
     await cdp_sesion.send("Page.enable")
+    # Capturo iframes y service workers
+    await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
 
     #cdp_sesion.on("Network.requestWillBeSent", info_peticiones)
-    cdp_sesion.on("Page.frameNavigated", info_pages)
+    #cdp_sesion.on("Page.frameNavigated", info_pages)
+    cdp_sesion.on("Target.targetCreated", info_target)
 
-    await page.goto("https://cosec.inf.uc3m.es")
+    await page.goto("https://web.dev")
 
     await page.wait_for_event("close", timeout=0)
     try:
