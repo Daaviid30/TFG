@@ -1,17 +1,29 @@
 #------------------------------ IMPORTACIONES DE LIBRERIAS ------------------------------
 
 from playwright.async_api import async_playwright, Playwright
-import asyncio, shutil, json, time
+import asyncio, shutil, json, time, os
+
+#------------------------------- ELIMINAR REPORTE ANTERIOR ------------------------------
+try:
+    os.remove("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/report.json")
+except:
+    pass
 
 #------------------------------- VARIABLES GLOBALES -------------------------------------
 user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
 start_time = time.time()
+informacion_json = []
 
 #------------------------------- FUNCIONES AUXILIARES ----------------------------------
 def generar_timestamp():
     # Generarmos nuestro timestamp en milisegundos desde el inicio del programa
     return int((time.time() - start_time) * 1000)
+
+async def generar_informe_json():
+    # Toda la informacion recopilada la almacenamos en un JSON para su posterior analisis
+    with open("report.json", "w") as report:
+        json.dump(informacion_json, report, indent=4)
 
 #------------------------------- FUNCIONES JSON ----------------------------------------
 def info_target(target):
@@ -21,7 +33,8 @@ def info_target(target):
         "title": target["targetInfo"]["title"],
         "timestamp": generar_timestamp()
     }
-    print(informacion)
+    
+    informacion_json.append(informacion)
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
     # Creamos un contexto permanente para poder cargar la extension que se encuentra en path_to_extension
@@ -44,7 +57,10 @@ async def run(playwright: Playwright):
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
-    await page.goto("https://cosec.inf.uc3m.es")
+    await page.goto("https://uc3m.es")
+
+    """----------------------- CREACION DE REPORTE JSON ------------------------------"""
+    await generar_informe_json()
 
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Esperamos por el cierrre de la pagina que se está utilizando
