@@ -1,5 +1,5 @@
 from playwright.async_api import async_playwright, Playwright
-import asyncio, shutil
+import asyncio, shutil, json
 
 user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
@@ -9,6 +9,9 @@ def info_peticiones(request):
 
 def info_pages(page):
     print(f"URL PAGE: {page['frame']['url']}, {page['frame']['mimeType']}")
+
+def info_scripts(script):
+    print(f"URL SCRIPT: {script['url']}")
 
 def info_target(target):
     print(f"Tipo de target:{target['targetInfo']['type']}, URL: {target['targetInfo']['url']}")
@@ -22,14 +25,17 @@ async def run(playwright: Playwright):
     cdp_sesion = await page.context.new_cdp_session(page)
     await cdp_sesion.send("Network.enable")
     await cdp_sesion.send("Page.enable")
+    # capturo scripts
+    await cdp_sesion.send("Debugger.enable")
     # Capturo iframes y service workers
     await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
 
-    #cdp_sesion.on("Network.requestWillBeSent", info_peticiones)
-    #cdp_sesion.on("Page.frameNavigated", info_pages)
     cdp_sesion.on("Target.targetCreated", info_target)
+    cdp_sesion.on("Debugger.scriptParsed", info_scripts)
+    cdp_sesion.on("Network.requestWillBeSent", info_peticiones)
+    cdp_sesion.on("Page.frameNavigated", info_pages)
 
-    await page.goto("https://web.dev")
+    await page.goto("https://cosec.inf.uc3m.es")
 
     await page.wait_for_event("close", timeout=0)
     try:
