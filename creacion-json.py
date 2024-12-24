@@ -35,6 +35,33 @@ def info_target(target):
     }
     
     informacion_json.append(informacion)
+
+def info_network_request(request):
+    # ¿Respuesta y petición deberían tener un timestamp para cada uno?
+    informacion = {
+        "request_id": request["requestId"],
+        "request_url": request["request"]["url"],
+        "request_method": request["request"]["method"],
+        "request_post_data": request["request"].get("postDataEntries", None),
+        "initiator_url": request["initiator"].get("url", None),
+        "initiator_type": request["initiator"]["type"],
+        "timestamp": generar_timestamp()
+    }
+
+    informacion_json.append(informacion)
+
+def info_network_response(response):
+    informacion = {
+        "request_id": response["requestId"],
+        "response_url": response["response"]["url"],
+        "response_status": response["response"]["status"],
+        "service_worker_response_source": response["response"].get("serviceWorkerResponseSource", None),
+        "timestamp": generar_timestamp()
+    }
+
+    informacion_json.append(informacion)
+
+
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
     # Creamos un contexto permanente para poder cargar la extension que se encuentra en path_to_extension
@@ -49,15 +76,20 @@ async def run(playwright: Playwright):
     cdp_sesion = await contexto.new_cdp_session(page)
     # Habilitamos los diferentes eventos que queremos capturar
     await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
+    await cdp_sesion.send("Network.enable")
 
     # Usamos las funciones para recoger información y mandarla a un fichero json
     # FUNCIONES DEL EVENTO TARGET
     cdp_sesion.on("Target.targetCreated", info_target)
     cdp_sesion.on("Target.targetInfoChanged", info_target)
+    
+    # FUNCIONES DEL EVENTO NETWORK
+    cdp_sesion.on("Network.requestWillBeSent", info_network_request)
+    cdp_sesion.on("Network.responseReceived", info_network_response)
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
-    await page.goto("https://uc3m.es")
+    await page.goto("https://cosec.inf.uc3m.es")
 
     """----------------------- CREACION DE REPORTE JSON ------------------------------"""
     await generar_informe_json()
