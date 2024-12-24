@@ -42,8 +42,9 @@ async def generar_informe_json():
 #------------------------------- FUNCIONES JSON ----------------------------------------
 def info_target(target):
     informacion = {
+        "type": "TARGET",
         "url": target["targetInfo"]["url"],
-        "type": target["targetInfo"]["type"],
+        "target_type": target["targetInfo"]["type"],
         "title": target["targetInfo"]["title"],
         "timestamp": generar_timestamp()
     }
@@ -53,6 +54,7 @@ def info_target(target):
 def info_network_request(request):
     # ¿Respuesta y petición deberían tener un timestamp para cada uno?
     informacion = {
+        "type": "REQUEST",
         "request_id": request["requestId"],
         "request_url": request["request"]["url"],
         "request_method": request["request"]["method"],
@@ -66,6 +68,7 @@ def info_network_request(request):
 
 def info_network_response(response):
     informacion = {
+        "type": "RESPONSE",
         "request_id": response["requestId"],
         "response_url": response["response"]["url"],
         "response_status": response["response"]["status"],
@@ -75,6 +78,14 @@ def info_network_response(response):
 
     informacion_json.append(informacion)
 
+def info_page_navigated(page):
+    informacion = {
+        "type": "PAGE",
+        "frame_id": page["frame"]["id"],
+        "parent_id": page["frame"].get("parentId", None),
+        "page_url": page["frame"]["url"],
+        "timestamp": generar_timestamp()
+    }
 
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
@@ -91,6 +102,7 @@ async def run(playwright: Playwright):
     # Habilitamos los diferentes eventos que queremos capturar
     await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
     await cdp_sesion.send("Network.enable")
+    await cdp_sesion.send("Page.enable")
 
     # Usamos las funciones para recoger información y mandarla a un fichero json
     # FUNCIONES DEL EVENTO TARGET
@@ -100,6 +112,9 @@ async def run(playwright: Playwright):
     # FUNCIONES DEL EVENTO NETWORK
     cdp_sesion.on("Network.requestWillBeSent", info_network_request)
     cdp_sesion.on("Network.responseReceived", info_network_response)
+
+    # FUNCIONES DEL EVENTO PAGE
+    cdp_sesion.on("Page.frameNavigated", info_page_navigated)
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
