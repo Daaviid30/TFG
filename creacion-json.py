@@ -3,11 +3,25 @@
 from playwright.async_api import async_playwright, Playwright
 import asyncio, shutil, json, time, os
 
-#------------------------------- ELIMINAR REPORTE ANTERIOR ------------------------------
+#------------------------------- ELIMINAR REPORTE Y USER DATA ANTERIOR ------------------
 try:
     os.remove("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/report.json")
 except:
     pass
+
+try:
+    shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
+except:
+    pass
+#------------------------------- PALETA DE COLORES --------------------------------------
+greenColour = "\033[0;32m\033[1m" 
+endColour = "\033[0m\033[0m" 
+redColour = "\033[0;31m\033[1m" 
+blueColour = "\033[0;34m\033[1m" 
+yellowColour = "\033[0;33m\033[1m" 
+purpleColour = "\033[0;35m\033[1m" 
+turquoiseColour = "\033[0;36m\033[1m" 
+grayColour = "\033[0;37m\033[1m"
 
 #------------------------------- VARIABLES GLOBALES -------------------------------------
 user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
@@ -90,10 +104,7 @@ async def run(playwright: Playwright):
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
     await page.goto("https://cosec.inf.uc3m.es")
-
-    """----------------------- CREACION DE REPORTE JSON ------------------------------"""
-    await generar_informe_json()
-
+    
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Esperamos por el cierrre de la pagina que se está utilizando
     await page.wait_for_event("close", timeout=0)
@@ -101,10 +112,14 @@ async def run(playwright: Playwright):
     try:
         await contexto.close()
     except Exception as e:
-        print(f"Error closing context: {e}")
+        print(f"{redColour}Error closing context: {e}{endColour}")
 
     shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
 
+    """----------------------- CREACION DE REPORTE JSON ------------------------------"""
+    print(f"{yellowColour}[!]{endColour}{blueColour} Generando reporte...{endColour}")
+    await generar_informe_json()
+    print(f"{yellowColour}[+]{endColour}{greenColour} Reporte generado exitosamente, guardado como report.json{endColour}")
 
 #-------------------------------- LLAMADA A LA FUNCION PRINCIPAL ------------------------------
 async def main():
