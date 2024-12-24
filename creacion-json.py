@@ -52,7 +52,6 @@ def info_target(target):
     informacion_json.append(informacion)
 
 def info_network_request(request):
-    # ¿Respuesta y petición deberían tener un timestamp para cada uno?
     informacion = {
         "type": "REQUEST",
         "request_id": request["requestId"],
@@ -96,8 +95,9 @@ async def run(playwright: Playwright):
     page = contexto.pages[0]
 
     """----------------------- CDP (Chrome DevTools Protocol) ------------------------"""
-
+    print(f"{yellowColour}[+]{endColour}{grayColour} Empezando el analisis del comportamiento del navegador{endColour}")
     # Cargamos el CDP (Chrome DevTools Protocol), que nos servira para utilizar multiples funciones
+    print(f"{yellowColour}[+]{endColour}{grayColour} Cargando CDP y sus funcionalidades...{endColour}")
     cdp_sesion = await contexto.new_cdp_session(page)
     # Habilitamos los diferentes eventos que queremos capturar
     await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
@@ -118,7 +118,8 @@ async def run(playwright: Playwright):
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
-    await page.goto("https://cosec.inf.uc3m.es")
+    print(f"{yellowColour}[+]{endColour}{blueColour} Realizando acciones automaticas en el navegador...{endColour}")
+    await page.goto("https://uc3m.es")
     
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Esperamos por el cierrre de la pagina que se está utilizando
@@ -127,9 +128,11 @@ async def run(playwright: Playwright):
     try:
         await contexto.close()
     except Exception as e:
-        print(f"{redColour}Error closing context: {e}{endColour}")
+        print(f"{redColour}[!]Error closing context: {e}{endColour}")
 
     shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
+    print(f"{yellowColour}[+]{endColour}{greenColour} Analisis finalizado!{endColour}")
+
 
     """----------------------- CREACION DE REPORTE JSON ------------------------------"""
     print(f"{yellowColour}[!]{endColour}{blueColour} Generando reporte...{endColour}")
