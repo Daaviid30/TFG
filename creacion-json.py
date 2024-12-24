@@ -86,6 +86,19 @@ def info_page_navigated(page):
         "timestamp": generar_timestamp()
     }
 
+    informacion_json.append(informacion)
+
+def info_script(script):
+    informacion = {
+        "type": "SCRIPT",
+        "script_id": script["scriptId"],
+        "script_url": script["url"],
+        "stack_trace": script.get("stackTrace", None),
+        "timestamp": generar_timestamp()
+    }
+
+    informacion_json.append(informacion)
+
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
     # Creamos un contexto permanente para poder cargar la extension que se encuentra en path_to_extension
@@ -103,6 +116,7 @@ async def run(playwright: Playwright):
     await cdp_sesion.send("Target.setDiscoverTargets", {"discover": True})
     await cdp_sesion.send("Network.enable")
     await cdp_sesion.send("Page.enable")
+    await cdp_sesion.send("Debugger.enable")
 
     # Usamos las funciones para recoger información y mandarla a un fichero json
     # FUNCIONES DEL EVENTO TARGET
@@ -114,12 +128,15 @@ async def run(playwright: Playwright):
     cdp_sesion.on("Network.responseReceived", info_network_response)
 
     # FUNCIONES DEL EVENTO PAGE
-    cdp_sesion.on("Page.frameNavigated", info_page_navigated)
+    #cdp_sesion.on("Page.frameNavigated", info_page_navigated)
+
+    # FUNCIONES DEL EVENTO DEBUGGER
+    cdp_sesion.on("Debugger.scriptParsed", info_script)
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
     print(f"{yellowColour}[+]{endColour}{blueColour} Realizando acciones automaticas en el navegador...{endColour}")
-    await page.goto("https://uc3m.es")
+    await page.goto("http://127.0.0.1")
     
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Esperamos por el cierrre de la pagina que se está utilizando
