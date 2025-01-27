@@ -136,9 +136,10 @@ async def run(playwright: Playwright):
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
     print(f"{yellowColour}[+]{endColour}{blueColour} Realizando acciones automaticas en el navegador...{endColour}")
-    await page.goto("http://127.0.0.1")
+    await page.goto("http://cosec.inf.uc3m.es")
     
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
+    
     # Esperamos por el cierrre de la pagina que se está utilizando
     await page.wait_for_event("close", timeout=0)
     # Cerramos el contexto (con un try para evitar algun error de cierre)
