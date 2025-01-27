@@ -1,9 +1,8 @@
 #### DUDAS QUE VAN SURGUIENDO PARA MIRAR Y RESOLVER
 
-- Creo que teniendo el objeto TARGET no es necesario PAGE
-
-- Deberiamos filtrar todas las peticiones que no nos interesan, ya sean carga de imágemes, fuentes,...
-
-- Hace falta el contenido de un script para evaluarlo? en caso de ser asi deberiamos usar el scriptId
-
+- Tenemos varios objetos de los cuales no podemos obtener el initiator de forma "directa":
+    - Initiator de tipo parser (que devuelve una url, se podría asociar a un targetID pero no a un evento,
+    a no ser que se utilice el timestamp y el orden de eventos)
+    - El primer script que no tiene ni origen ni initiator, unicamente executionContextID
+    
 
