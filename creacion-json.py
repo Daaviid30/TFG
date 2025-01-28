@@ -30,6 +30,7 @@ user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
 start_time = time.time()
 informacion_json = []
+targets = None
 
 #------------------------------- FUNCIONES AUXILIARES ----------------------------------
 def generar_timestamp():
@@ -46,7 +47,7 @@ def create_initiator(traffic):
     if initiator:
         initiator_type = initiator["type"]
         if initiator_type == "parser":
-            return initiator.get("url", None)
+            url = initiator.get("url", None)
         elif initiator_type == "script":
             script_id = initiator.get("stack", None).get("callFrames", None)[0].get("scriptId", None)
             if script_id:
@@ -79,6 +80,17 @@ def script_node(script):
     )
     informacion_json.append(nodo.to_dict())
 
+def crear_diccionario_targets(targets: dict):
+    """
+    Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
+    para poder relacionar muchos de los nodos
+    """
+    dic_targets = {}
+    targets = targets["targetInfos"]
+    for target in targets:
+        dic_targets[target["url"]] = target["targetId"]
+    return dic_targets
+
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
     # Creamos un contexto permanente para poder cargar la extension que se encuentra en path_to_extension
@@ -108,6 +120,11 @@ async def run(playwright: Playwright):
     await page.goto("http://cosec.inf.uc3m.es")
     
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
+    # Guardamos los targets existentes
+    targets = await cdp_sesion.send("Target.getTargets")
+    targets = crear_diccionario_targets(targets)
+
+    print(f"{turquoiseColour}[+]{endColour}{blueColour} Información de los targets creados:{endColour}\n{targets}")
     
     # Esperamos por el cierrre de la pagina que se está utilizando
     await page.wait_for_event("close", timeout=0)
