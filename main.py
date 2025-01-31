@@ -4,6 +4,9 @@ from playwright.async_api import async_playwright, Playwright
 from traffic import Traffic
 from script_loaded import ScriptLoaded
 import asyncio, shutil, json, time, os
+import navigation_graph
+import networkx as nx
+import matplotlib.pyplot as plt
 
 #------------------------------- ELIMINAR REPORTE Y USER DATA ANTERIOR ------------------
 try:
@@ -158,6 +161,8 @@ async def run(playwright: Playwright):
 async def main():
     async with async_playwright() as playwright:
         nodos = await run(playwright)
-        print (nodos)
+        grafo = navigation_graph.crear_grafo(nodos)
+        nx.draw(grafo, with_labels=True, node_color="lightblue", edge_color="gray")
+        plt.show()
 
 asyncio.run(main())
