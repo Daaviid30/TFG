@@ -30,6 +30,7 @@ user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
 start_time = time.time()
 informacion_json = []
+nodos = []
 targets = None
 
 #------------------------------- FUNCIONES AUXILIARES ----------------------------------
@@ -48,6 +49,7 @@ def create_initiator(traffic):
         initiator_type = initiator["type"]
         if initiator_type == "parser":
             url = initiator.get("url", None)
+            return url
         elif initiator_type == "script":
             script_id = initiator.get("stack", None).get("callFrames", None)[0].get("scriptId", None)
             if script_id:
@@ -56,6 +58,21 @@ def create_initiator(traffic):
         else:
             return initiator.get("url", None)
         
+def crear_diccionario_targets(targets: dict):
+    """
+    Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
+    para poder relacionar muchos de los nodos
+    """
+    dic_targets = {}
+    targets = targets["targetInfos"]
+    for target in targets:
+        dic_targets[target["url"]] = target["targetId"]
+    return dic_targets
+
+def transformar_target(nodos: list, dic_targets: dict):
+    for nodo in nodos:
+        if nodo.initiator and nodo.initiator in dic_targets.keys():
+            nodo.initiator = dic_targets[nodo.initiator]
 #------------------------------- CREACION DE NODOS ----------------------------------------
 
 def traffic_node(traffic):
@@ -66,6 +83,7 @@ def traffic_node(traffic):
         initiator=create_initiator(traffic),
         timestamp=generar_timestamp()
     )
+    nodos.append(nodo)
     informacion_json.append(nodo.to_dict())
 
 def script_node(script):
@@ -78,18 +96,8 @@ def script_node(script):
         initiator=create_initiator(script),
         timestamp=generar_timestamp()
     )
+    nodos.append(nodo)
     informacion_json.append(nodo.to_dict())
-
-def crear_diccionario_targets(targets: dict):
-    """
-    Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
-    para poder relacionar muchos de los nodos
-    """
-    dic_targets = {}
-    targets = targets["targetInfos"]
-    for target in targets:
-        dic_targets[target["url"]] = target["targetId"]
-    return dic_targets
 
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
@@ -123,6 +131,7 @@ async def run(playwright: Playwright):
     # Guardamos los targets existentes
     targets = await cdp_sesion.send("Target.getTargets")
     targets = crear_diccionario_targets(targets)
+    transformar_target(nodos, targets)
 
     print(f"{turquoiseColour}[+]{endColour}{blueColour} Información de los targets creados:{endColour}\n{targets}")
     
@@ -143,9 +152,12 @@ async def run(playwright: Playwright):
     await generar_informe_json()
     print(f"{yellowColour}[+]{endColour}{greenColour} Reporte generado exitosamente, guardado como report.json{endColour}")
 
+    return nodos
+
 #-------------------------------- LLAMADA A LA FUNCION PRINCIPAL ------------------------------
 async def main():
     async with async_playwright() as playwright:
-        await run(playwright)
+        nodos = await run(playwright)
+        print (nodos)
 
 asyncio.run(main())

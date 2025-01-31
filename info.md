@@ -5,6 +5,8 @@
     a no ser que se utilice el timestamp y el orden de eventos)
     + Con el evento Target.getTargets, podemos obtener todos los targets y por lo tanto mapear cada una de
     las URLs con sus respectivos Targets ID, en caso de no ser ninguno de los que esta, se mantendría la URL.
+    (SOLUCIONADO)
     - El primer script que no tiene ni origen ni initiator, unicamente executionContextID
-    
 
+- Pasos para ir relacionando cada uno de los eventos:
+    1. 
