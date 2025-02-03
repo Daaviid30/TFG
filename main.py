@@ -46,7 +46,7 @@ async def generar_informe_json():
     with open("report.json", "w") as report:
         json.dump(informacion_json, report, indent=4)
 
-def create_initiator(traffic):
+def create_network_initiator(traffic):
     initiator = traffic.get("initiator", None)
     if initiator:
         initiator_type = initiator["type"]
@@ -60,6 +60,13 @@ def create_initiator(traffic):
             return initiator.get("stack", None).get("parent", None).get("callFrames", None)[0].get("scriptId", None)
         else:
             return initiator.get("url", None)
+        
+def create_script_initiator(script):
+    stack_trace = script.get("stackTrace", None)
+    if stack_trace:
+        callframe = stack_trace.get("callFrames", None)[0]
+        return callframe.get("scriptId", None)
+    return None
         
 def crear_diccionario_targets(targets: dict):
     """
@@ -83,7 +90,7 @@ def traffic_node(traffic):
         request_ID=traffic["requestId"],
         target_ID=traffic["frameId"],
         origin=traffic["request"]["url"],
-        initiator=create_initiator(traffic),
+        initiator=create_network_initiator(traffic),
         timestamp=generar_timestamp()
     )
     nodos.append(nodo)
@@ -96,7 +103,7 @@ def script_node(script):
         execution_context_ID=script["executionContextId"],
         type=script.get("executionContextAuxData", None).get("type", None),
         origin=script["url"],
-        initiator=create_initiator(script),
+        initiator=create_script_initiator(script),
         timestamp=generar_timestamp()
     )
     nodos.append(nodo)
@@ -132,9 +139,10 @@ async def run(playwright: Playwright):
     
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Guardamos los targets existentes
-    targets = await cdp_sesion.send("Target.getTargets")
+    # DE MOMENTO NO LO UTILIZAMOS
+    """ targets = await cdp_sesion.send("Target.getTargets")
     targets = crear_diccionario_targets(targets)
-    transformar_target(nodos, targets)
+    transformar_target(nodos, targets) """
 
     print(f"{turquoiseColour}[+]{endColour}{blueColour} Información de los targets creados:{endColour}\n{targets}")
     
