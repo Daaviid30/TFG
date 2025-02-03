@@ -35,6 +35,7 @@ start_time = time.time()
 informacion_json = []
 nodos = []
 targets = None
+execution_contexts = {}
 
 #------------------------------- FUNCIONES AUXILIARES ----------------------------------
 def generar_timestamp():
@@ -83,6 +84,19 @@ def transformar_target(nodos: list, dic_targets: dict):
     for nodo in nodos:
         if nodo.initiator and nodo.initiator in dic_targets.keys():
             nodo.initiator = dic_targets[nodo.initiator]
+        
+def execution_context_info(execution_context):
+    """ Almacenamos la información de los contextos de ejecución por si los necesitamos 
+     mas adelante a la hora de crear lo initiators """
+    
+    context = execution_context["context"]
+    id = context["id"]
+    if context.get("auxData", None).get("isDefault", None):
+        name = "default"
+    else:
+        name = context["name"]
+    execution_contexts[id] = name
+
 #------------------------------- CREACION DE NODOS ----------------------------------------
 
 def traffic_node(traffic):
@@ -125,12 +139,16 @@ async def run(playwright: Playwright):
     # Habilitamos los diferentes eventos que queremos capturar
     await cdp_sesion.send("Network.enable")
     await cdp_sesion.send("Debugger.enable")
+    await cdp_sesion.send("Runtime.enable")
     
     # FUNCIONES DEL EVENTO NETWORK
     cdp_sesion.on("Network.requestWillBeSent", traffic_node)
 
     # FUNCIONES DEL EVENTO DEBUGGER
     cdp_sesion.on("Debugger.scriptParsed", script_node)
+
+    # FUNCIONES PARA CAPTURAR EXECUTION CONTEXTS
+    cdp_sesion.on("Runtime.executionContextCreated", execution_context_info)
 
     """----------------------- ACTIVIDADES EN EL NAVEGADOR ---------------------------"""
     # Con la pagina activa navegamos a una web
@@ -145,6 +163,7 @@ async def run(playwright: Playwright):
     transformar_target(nodos, targets) """
 
     print(f"{turquoiseColour}[+]{endColour}{blueColour} Información de los targets creados:{endColour}\n{targets}")
+    print(execution_contexts)
     
     # Esperamos por el cierrre de la pagina que se está utilizando
     await page.wait_for_event("close", timeout=0)
