@@ -81,7 +81,8 @@ def create_network_initiator(traffic):
                 return script_id
             return initiator.get("stack", None).get("parent", None).get("callFrames", None)[0].get("scriptId", None)
         else:
-            return initiator.get("url", None)
+            return initiator.get("url", traffic["documentURL"])
+    return traffic["documentURL"]
         
 """
 Mismo objetivo que la función anterior, con la diferencia de que aquí el initiator es de un script
@@ -92,7 +93,7 @@ def create_script_initiator(script):
     if stack_trace:
         callframe = stack_trace.get("callFrames", None)[0]
         return callframe.get("scriptId", None)
-    return None
+    return execution_contexts[script["executionContextId"]][0]
 
 """
 Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
@@ -116,7 +117,8 @@ def transformar_target(nodos: list, dic_targets: dict):
 
 """ 
 Almacenamos la información de los contextos de ejecución por si los necesitamos 
-mas adelante a la hora de crear lo initiators 
+mas adelante a la hora de crear lo initiators.
+{executionContextId: [name, origin]}
 """        
 def execution_context_info(execution_context):
     
@@ -126,7 +128,8 @@ def execution_context_info(execution_context):
         name = "default"
     else:
         name = context["name"]
-    execution_contexts[id] = name
+    origin = context["origin"]
+    execution_contexts[id] = [name, origin]
 
 #------------------------------- CREACION DE NODOS ----------------------------------------
 
@@ -138,7 +141,7 @@ def traffic_node(traffic):
     nodo = Traffic(
         request_ID=traffic["requestId"],
         target_ID=traffic["frameId"],
-        origin=traffic["request"]["url"],
+        url=traffic["request"]["url"],
         initiator=create_network_initiator(traffic),
         timestamp=generar_timestamp()
     )
@@ -155,7 +158,7 @@ def script_node(script):
         target_ID=script.get("executionContextAuxData", None).get("frameId", None),
         execution_context_ID=script["executionContextId"],
         type=script.get("executionContextAuxData", None).get("type", None),
-        origin=script["url"],
+        origin=execution_contexts[script["executionContextId"]][1],
         initiator=create_script_initiator(script),
         timestamp=generar_timestamp()
     )
@@ -197,9 +200,9 @@ async def run(playwright: Playwright):
     """----------------------- CIERRE DE CONTEXTO ------------------------------------"""
     # Guardamos los targets existentes
     # DE MOMENTO NO LO UTILIZAMOS
-    """ targets = await cdp_sesion.send("Target.getTargets")
+    targets = await cdp_sesion.send("Target.getTargets")
     targets = crear_diccionario_targets(targets)
-    transformar_target(nodos, targets) """
+    transformar_target(nodos, targets)
 
     print(f"{turquoiseColour}[+]{endColour}{blueColour} Información de los targets creados:{endColour}\n{targets}")
     print(execution_contexts)
