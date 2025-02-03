@@ -1,24 +1,34 @@
 #------------------------------ IMPORTACIONES DE LIBRERIAS ------------------------------
 
 from playwright.async_api import async_playwright, Playwright
-from traffic import Traffic
-from script_loaded import ScriptLoaded
+from traffic import Traffic # Nodos de peticiones capaturadas
+from script_loaded import ScriptLoaded # Nodos de scripts cargados
 import asyncio, shutil, json, time, os
-import navigation_graph
-import networkx as nx
-import matplotlib.pyplot as plt
+import navigation_graph # Script donde se crea el grafo
+import networkx as nx # Libreria para grafos
+import matplotlib.pyplot as plt # Mostrar el grafo
 
 #------------------------------- ELIMINAR REPORTE Y USER DATA ANTERIOR ------------------
+
+""" 
+A la hora de crear un contexto permanente para poder cargar la extensión, necesitamos un directorio
+donde almacenar datos del usuario, por ello en cada ejecución borramos los datos anteriores.
+"""
+
 try:
     os.remove("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/report.json")
 except:
-    pass
+    print("No existen reportes anteriores")
 
 try:
     shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
 except:
-    pass
+    print("No existen directorios con datos de usuarios anteriores")
 #------------------------------- PALETA DE COLORES --------------------------------------
+
+"""
+Paleta de colores para mostrar la salida de forma más visual
+"""
 greenColour = "\033[0;32m\033[1m" 
 endColour = "\033[0m\033[0m" 
 redColour = "\033[0;31m\033[1m" 
@@ -29,15 +39,22 @@ turquoiseColour = "\033[0;36m\033[1m"
 grayColour = "\033[0;37m\033[1m"
 
 #------------------------------- VARIABLES GLOBALES -------------------------------------
+
+# Path donde almacenamos datos de usuario y directorio de la extensión
 user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
 path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
+# Tiempo de inicio de ejecución del programa para crear timestamps
 start_time = time.time()
+# Información de los nodos almacenados en forma de diccionario para crear un JSON
 informacion_json = []
+# Información de los nodos almacenados en forma de objetos
 nodos = []
+# Variable en la que almacenaremos informacion de los targets y contextos de ejecución
 targets = None
 execution_contexts = {}
 
 #------------------------------- FUNCIONES AUXILIARES ----------------------------------
+
 def generar_timestamp():
     # Generarmos nuestro timestamp en milisegundos desde el inicio del programa
     return int((time.time() - start_time) * 1000)
@@ -47,6 +64,10 @@ async def generar_informe_json():
     with open("report.json", "w") as report:
         json.dump(informacion_json, report, indent=4)
 
+"""
+Creamos la siguiente función para poder diferenciar y obtener diferentes initiators de
+peticiones realizadas, todos desde el objeto Initiator (si es que existe).
+"""
 def create_network_initiator(traffic):
     initiator = traffic.get("initiator", None)
     if initiator:
@@ -62,32 +83,42 @@ def create_network_initiator(traffic):
         else:
             return initiator.get("url", None)
         
+"""
+Mismo objetivo que la función anterior, con la diferencia de que aquí el initiator es de un script
+cargado y se realiza la busqueda desde el objeto stackTrace.
+"""
 def create_script_initiator(script):
     stack_trace = script.get("stackTrace", None)
     if stack_trace:
         callframe = stack_trace.get("callFrames", None)[0]
         return callframe.get("scriptId", None)
     return None
-        
+
+"""
+Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
+para poder relacionar muchos de los nodos
+"""     
 def crear_diccionario_targets(targets: dict):
-    """
-    Creamos una funcion que crea un diccionario en el que la clave es la URL y el valor el targetID,
-    para poder relacionar muchos de los nodos
-    """
     dic_targets = {}
     targets = targets["targetInfos"]
     for target in targets:
         dic_targets[target["url"]] = target["targetId"]
     return dic_targets
 
+"""
+Función que cambia los initiators si la url de los nodos coincide con un ID especifico.
+[NO ESTA EN USO]
+"""
 def transformar_target(nodos: list, dic_targets: dict):
     for nodo in nodos:
         if nodo.initiator and nodo.initiator in dic_targets.keys():
             nodo.initiator = dic_targets[nodo.initiator]
-        
+
+""" 
+Almacenamos la información de los contextos de ejecución por si los necesitamos 
+mas adelante a la hora de crear lo initiators 
+"""        
 def execution_context_info(execution_context):
-    """ Almacenamos la información de los contextos de ejecución por si los necesitamos 
-     mas adelante a la hora de crear lo initiators """
     
     context = execution_context["context"]
     id = context["id"]
@@ -99,6 +130,10 @@ def execution_context_info(execution_context):
 
 #------------------------------- CREACION DE NODOS ----------------------------------------
 
+"""
+Declaramos y creamos objetos de nodos de tráfico según vamos capturando peticiones
+realizadas.
+"""
 def traffic_node(traffic):
     nodo = Traffic(
         request_ID=traffic["requestId"],
@@ -110,6 +145,10 @@ def traffic_node(traffic):
     nodos.append(nodo)
     informacion_json.append(nodo.to_dict())
 
+"""
+Declaramos y creamos objetos de nodos de scripts según estos van siendo cargados en el contexto
+que les corresponda.
+"""
 def script_node(script):
     nodo = ScriptLoaded(
         script_ID=script["scriptId"],
