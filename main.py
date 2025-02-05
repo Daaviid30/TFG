@@ -230,8 +230,8 @@ async def run(playwright: Playwright):
 async def main():
     async with async_playwright() as playwright:
         nodos = await run(playwright)
-        grafo = navigation_graph.crear_grafo(nodos)
-        nx.draw(grafo, with_labels=True, node_color="lightblue", edge_color="gray")
-        plt.show()
+        navigation_graph.crear_grafo(informacion_json)
+        #nx.draw(grafo, with_labels=True, node_color="lightblue", edge_color="gray")
+        #plt.show()
 
 asyncio.run(main())
