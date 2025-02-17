@@ -211,6 +211,8 @@ async def run(playwright: Playwright):
     await page.wait_for_event("close", timeout=0)
     # Cerramos el contexto (con un try para evitar algun error de cierre)
     try:
+        # Esperamos a que cierren todos los procesos para cerrar de forma correcta
+        await asyncio.sleep(2)
         await contexto.close()
     except Exception as e:
         print(f"{redColour}[!]Error closing context: {e}{endColour}")
@@ -231,7 +233,5 @@ async def main():
     async with async_playwright() as playwright:
         nodos = await run(playwright)
         navigation_graph.crear_grafo(informacion_json)
-        #nx.draw(grafo, with_labels=True, node_color="lightblue", edge_color="gray")
-        #plt.show()
 
 asyncio.run(main())

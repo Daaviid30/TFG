@@ -44,8 +44,10 @@ def crear_grafo(informacion_json):
                 G.add_node(source, tipo="initiator", label=f"Iniciador {source}")  # Nodo genérico
             G.add_edge(source, target, tipo="relacion", label="Inicia")
 
-    # 📌 Disposición mejorada de nodos
+    # Disposición mejorada de nodos
     pos = nx.kamada_kawai_layout(G)  # Distribuye los nodos minimizando solapamientos
+
+    print(G)
 
     # Dibujamos nodos con diferentes estilos
     nx.draw_networkx_nodes(G, pos, nodelist=nodos_trafico, node_color="skyblue", node_shape="o", node_size=700)
