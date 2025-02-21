@@ -3,3 +3,4 @@ env
 report.json
 user_data_dir
 imagenes_traza
+__pycache__

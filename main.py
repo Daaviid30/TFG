@@ -7,6 +7,7 @@ import asyncio, shutil, json, time, os
 import navigation_graph # Script donde se crea el grafo
 import networkx as nx # Libreria para grafos
 import matplotlib.pyplot as plt # Mostrar el grafo
+import os
 
 #------------------------------- ELIMINAR REPORTE Y USER DATA ANTERIOR ------------------
 
@@ -15,15 +16,25 @@ A la hora de crear un contexto permanente para poder cargar la extensión, neces
 donde almacenar datos del usuario, por ello en cada ejecución borramos los datos anteriores.
 """
 
+# Almacenamos la ruta en la cual nos encontramos
+actual_path = os.getcwd()
+# Añadimos el path del JSON a la ruta actual
+report_path = actual_path + "\\report.json"
+print(report_path)
+
 try:
-    os.remove("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/report.json")
+    os.remove(report_path)
 except:
     print("No existen reportes anteriores")
 
+# Añadimos el path del directorio de la informacion del usuario a la ruta actual
+user_data_path = actual_path + "\\user_data_dir"
+
 try:
-    shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
+    shutil.rmtree(user_data_path)
 except:
     print("No existen directorios con datos de usuarios anteriores")
+
 #------------------------------- PALETA DE COLORES --------------------------------------
 
 """
@@ -41,8 +52,15 @@ grayColour = "\033[0;37m\033[1m"
 #------------------------------- VARIABLES GLOBALES -------------------------------------
 
 # Path donde almacenamos datos de usuario y directorio de la extensión
-user_data_dir = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir"
-path_to_extension = "C:/Users/david/OneDrive/Escritorio/UC3M/TFG/Postman-Interceptor-Chrome-Web-Store"
+actual_dir = os.listdir(actual_path)
+path_to_extension = None
+
+for file in actual_dir:
+    if "Chrome-Web-Store" in file:
+        path_to_extension = actual_path + "\\" + file
+        break
+if not path_to_extension:
+    print("No hay ninguna extensión cargada")
 # Tiempo de inicio de ejecución del programa para crear timestamps
 start_time = time.time()
 # Información de los nodos almacenados en forma de diccionario para crear un JSON
@@ -168,7 +186,7 @@ def script_node(script):
 #------------------------------- FUNCION PRINCIPAL --------------------------------------
 async def run(playwright: Playwright):
     # Creamos un contexto permanente para poder cargar la extension que se encuentra en path_to_extension
-    contexto = await playwright.chromium.launch_persistent_context(user_data_dir, headless=False,\
+    contexto = await playwright.chromium.launch_persistent_context(user_data_path, headless=False,\
                                                             args=[f"--disable-extensions-except={path_to_extension}", f"--load-extension={path_to_extension}"])
     # Utilizaremos la primera pagina creada por el contexto
     page = contexto.pages[0]
@@ -217,7 +235,7 @@ async def run(playwright: Playwright):
     except Exception as e:
         print(f"{redColour}[!]Error closing context: {e}{endColour}")
 
-    shutil.rmtree("C:/Users/david/OneDrive/Escritorio/UC3M/TFG/user_data_dir")
+    shutil.rmtree(user_data_path)
     print(f"{yellowColour}[+]{endColour}{greenColour} Analisis finalizado!{endColour}")
 
 
