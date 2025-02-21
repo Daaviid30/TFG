@@ -8,6 +8,9 @@
 4. Tener por defecto un initiator
 5. Tener diferenciados los id de script, o lo que sea
 
+1. Distinguir entre extension o no
+2. Filtrar trafico de imagenes o google analitycs
+
 
 ### Memoria en LAtex
 
