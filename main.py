@@ -26,7 +26,7 @@ fileUtils.remove_user_data()
 
 print(f"{greenColour}[+]{endColour}{grayColour} Starting program...{endColour}")
 # Start time of the program
-start_time = timeUtils.get_current_time()
+timeUtils.start_time = timeUtils.get_current_time()
 
 
 async def run(playwright: Playwright) -> None:
@@ -64,6 +64,9 @@ async def run(playwright: Playwright) -> None:
 
     # Delete user data
     fileUtils.remove_user_data()
+
+    # Generation of the json report
+    await generate_json_report()
 
     print(f"{greenColour}[+]{endColour}{grayColour} Program finished{endColour}")
 

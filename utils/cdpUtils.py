@@ -7,9 +7,24 @@ This script contains all the functions needed to work with CDP (Chrome DevTools 
 
 from playwright.async_api import async_playwright
 import asyncio
+import json
 import node_objects.Target as Target
+import utils.timeUtils as timeUtils
 
-#---------------------------- TARGET FUNCTIONS ------------------------
+#---------------------------- JSON FUNCTIONS ----------------------------
+
+"""
+We need to store the infomation of the nodes in a json file in order to have
+a report that we can analyze later.
+"""
+report_json = [] # List of dictionaries that contains all the nodes
+
+async def generate_json_report() -> None:
+
+    with open("report.json", "w") as report:
+        json.dump(report_json, report, indent=4)
+
+#---------------------------- TARGET FUNCTIONS --------------------------
 
 def target_created(target) -> None:
 
@@ -18,24 +33,39 @@ def target_created(target) -> None:
     """
 
     target_info = target["targetInfo"]
+    # Create the target node object
     node = Target.TargetNode(
         target_info["targetId"],
-        target_info["type"]
+        target_info["type"],
+        "create",
+        timeUtils.generate_timestamp()
     )
-    print(f"Target created: {node.to_dict()}")
+    # Add the node to the report
+    report_json.append(node.to_dict())
 
 def target_info_changed(target) -> None:
 
     target_info = target["targetInfo"]
     node = Target.TargetNode(
         target_info["targetId"],
-        target_info["type"]
+        target_info["type"],
+        "change",
+        timeUtils.generate_timestamp()
     )
-    print(f"Info changed: {node.to_dict()}")
+    # Add the node to the report
+    report_json.append(node.to_dict())
 
 def target_destroyed(target) -> None:
 
-    print(f"Target destroyed: {target['targetId']}")
+    # Create the node in dict version, because destroy event is not a TargetNode
+    node = {
+        "nodeType": "target",
+        "targetID": target["targetId"],
+        "event": "destroy",
+        "timestamp": timeUtils.generate_timestamp()
+    }
+    # Add the node to the report
+    report_json.append(node)
 
 #---------------------------- CDP FUNCTIONS ------------------------------
 
@@ -61,3 +91,4 @@ def target_events(cdp_session) -> None:
     cdp_session.on("Target.targetCreated", target_created)
     cdp_session.on("Target.targetInfoChanged", target_info_changed)
     cdp_session.on("Target.targetDestroyed", target_destroyed)
+
