@@ -9,6 +9,7 @@ from playwright.async_api import async_playwright
 import asyncio
 import json
 import node_objects.Target as Target
+import node_objects.Page as Page
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -25,6 +26,25 @@ async def generate_json_report() -> None:
         json.dump(report_json, report, indent=4)
 
 #---------------------------- TARGET FUNCTIONS --------------------------
+
+def get_targets(targets) -> None:
+
+    """
+    This function is called at the beginning of the program, saving the targets that
+    exists before we start capturing them.
+    """
+
+    for target in targets["targetInfos"]:
+
+        # Create the target node object
+        node = Target.TargetNode(
+            target["targetId"],
+            target["type"],
+            "create",
+            timeUtils.generate_timestamp()
+        )
+        # Add the node to the report
+        report_json.append(node.to_dict())
 
 def target_created(target) -> None:
 
@@ -45,6 +65,11 @@ def target_created(target) -> None:
 
 def target_info_changed(target) -> None:
 
+    """
+    This function is called when the information of a target is changed,
+    and saves the target info.
+    """
+
     target_info = target["targetInfo"]
     node = Target.TargetNode(
         target_info["targetId"],
@@ -57,6 +82,9 @@ def target_info_changed(target) -> None:
 
 def target_destroyed(target) -> None:
 
+    """
+    This function is called when a new target is destroyed, and saves the target info.
+    """
     # Create the node in dict version, because destroy event is not a TargetNode
     node = {
         "nodeType": "target",
@@ -66,6 +94,24 @@ def target_destroyed(target) -> None:
     }
     # Add the node to the report
     report_json.append(node)
+
+#---------------------------- PAGE FUNCTIONS -----------------------------
+
+def page_navigated(page) -> None:
+
+    """
+    This function is called when we navigate to a page, saving the page info.
+    """
+
+    frame = page["frame"]
+    node = Page.PageNode(
+        frame["id"],
+        frame["url"],
+        frame["loaderId"],
+        timeUtils.generate_timestamp()
+    )
+    # Add the node to the report
+    report_json.append(node.to_dict())
 
 #---------------------------- CDP FUNCTIONS ------------------------------
 
@@ -92,3 +138,10 @@ def target_events(cdp_session) -> None:
     cdp_session.on("Target.targetInfoChanged", target_info_changed)
     cdp_session.on("Target.targetDestroyed", target_destroyed)
 
+def page_events(cdp_session) -> None:
+
+    """
+    This function calls all the page events we need.
+    """
+
+    cdp_session.on("Page.frameNavigated", page_navigated)

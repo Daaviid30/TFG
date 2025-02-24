@@ -45,9 +45,14 @@ async def run(playwright: Playwright) -> None:
 
     # Enable the events that we want to capture
     await enable_events(cdp_session)
+    
+    # Calling get_targets at the beginning of the program
+    targets = await cdp_session.send("Target.getTargets")
+    get_targets(targets)
 
-    # Call target functions
+    # Call CDP functions
     target_events(cdp_session)
+    page_events(cdp_session)
 
     # Navigation activities
     await page.goto("https://cosec.inf.uc3m.es")
