@@ -7,7 +7,7 @@ This script contains all the functions needed to work with CDP (Chrome DevTools 
 
 from playwright.async_api import async_playwright
 import asyncio
-import Target
+import node_objects.Target as Target
 
 #---------------------------- TARGET FUNCTIONS ------------------------
 

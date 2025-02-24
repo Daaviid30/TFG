@@ -11,9 +11,9 @@ from playwright.async_api import async_playwright, Playwright
 
 # Own modules
 import paths
-import fileUtils
-import timeUtils
-from cdpUtils import *
+import utils.fileUtils as fileUtils
+import utils.timeUtils as timeUtils
+from utils.cdpUtils import *
 from colours import *
 
 #------------------------- PREVIOUS INFORMATION DELETION -----------------

@@ -1,8 +1,8 @@
 #------------------------------ IMPORTACIONES DE LIBRERIAS ------------------------------
 
 from playwright.async_api import async_playwright, Playwright
-from traffic import Traffic # Nodos de peticiones capaturadas
-from script_loaded import ScriptLoaded # Nodos de scripts cargados
+from node_objects.traffic import Traffic # Nodos de peticiones capaturadas
+from node_objects.script_loaded import ScriptLoaded # Nodos de scripts cargados
 import asyncio, shutil, json, time, os
 import navigation_graph # Script donde se crea el grafo
 import networkx as nx # Libreria para grafos
