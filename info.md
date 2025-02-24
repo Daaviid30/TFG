@@ -1,21 +1,13 @@
 #### DUDAS QUE VAN SURGUIENDO PARA MIRAR Y RESOLVER
 
-- Tareas a realizar:
+**Dudas que preguntar**
 
-1. Crear la función create_script_initiator
-2. Dar más información del execution context a cada uno de los scripts lanzados
-3. distigir trafico de extensión o de otra cosa
-4. Tener por defecto un initiator
-5. Tener diferenciados los id de script, o lo que sea
-
-1. Distinguir entre extension o no
-2. Filtrar trafico de imagenes o google analitycs
+- Target.infoChanged es necesario? si nos fijamos indica que cambia la info del target pero en nuestros datos no cambia nada.
 
 
 ### Memoria en LAtex
-
 https://github.com/tairosonloa/UC3M_LaTeX_template
 
 
-# Red de neuronas con grafo:
+### Red de neuronas con grafo:
 torch_geometric

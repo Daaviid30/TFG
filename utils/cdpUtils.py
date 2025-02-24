@@ -113,6 +113,13 @@ def page_navigated(page) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
+#---------------------------- NETWORK FUNCTIONS --------------------------
+
+def request_sent(request) -> None:
+
+    """
+    This function is called when a new request is sent, saving the request info.
+    """
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
@@ -145,3 +152,11 @@ def page_events(cdp_session) -> None:
     """
 
     cdp_session.on("Page.frameNavigated", page_navigated)
+
+def network_events(cdp_session) -> None:
+
+    """
+    This function calls all the network events we need.
+    """
+
+    cdp_session.on("Network.requestWillBeSent", request_sent)
