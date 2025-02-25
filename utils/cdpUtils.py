@@ -11,6 +11,7 @@ import json
 import node_objects.Target as Target
 import node_objects.Page as Page
 import node_objects.Network as Network
+import node_objects.ExecutionContext as ExecutionContext
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -151,6 +152,38 @@ def request_sent(request) -> None:
 
     # Add the node to the report
     report_json.append(node.to_dict())
+
+#----------------------- EXECUTION CONTEXT FUNCTIONS ---------------------
+
+def get_execution_context_type(execution_context) -> str:
+    auxData = execution_context.get("auxData", None)
+    if auxData:
+        return auxData.get("type", None)
+    return auxData
+
+def get_execution_context_frameID(execution_context) -> str:
+    auxData = execution_context.get("auxData", None)
+    if auxData:
+        return auxData.get("frameId", None)
+    return auxData
+
+def execution_context_created(execution_context) -> None:
+
+    """
+    This function is called when a new execution context is created, saving the execution context info.
+    """
+    context = execution_context["context"]
+    node = ExecutionContext.ExecutionContextNode(
+        context["id"],
+        context["origin"],
+        context["name"],
+        get_execution_context_type(context),
+        get_execution_context_frameID(context),
+        timeUtils.generate_timestamp()
+    )
+    # Add the node to the report
+    report_json.append(node.to_dict())
+
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
@@ -164,6 +197,7 @@ async def enable_events(cdp_session) -> None:
     await cdp_session.send("Page.enable")
     await cdp_session.send("Debugger.enable")
     await cdp_session.send("Target.setDiscoverTargets", {"discover": True})
+    await cdp_session.send("Runtime.enable")
 
 
 def target_events(cdp_session) -> None:
@@ -191,3 +225,11 @@ def network_events(cdp_session) -> None:
     """
 
     cdp_session.on("Network.requestWillBeSent", request_sent)
+
+def execution_context_events(cdp_session) -> None:
+
+    """
+    This function calls all the execution context events we need.
+    """
+
+    cdp_session.on("Runtime.executionContextCreated", execution_context_created)
