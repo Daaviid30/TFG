@@ -55,6 +55,7 @@ async def run(playwright: Playwright) -> None:
     page_events(cdp_session)
     network_events(cdp_session)
     execution_context_events(cdp_session)
+    script_events(cdp_session)
 
     # Navigation activities
     await page.goto("https://cosec.inf.uc3m.es")

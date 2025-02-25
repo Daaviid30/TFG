@@ -12,6 +12,7 @@ import node_objects.Target as Target
 import node_objects.Page as Page
 import node_objects.Network as Network
 import node_objects.ExecutionContext as ExecutionContext
+import node_objects.Script as Script
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -184,6 +185,40 @@ def execution_context_created(execution_context) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
+#------------------------- DEBUGGER FUNCTIONS ----------------------------
+
+def get_script_type(script) -> str:
+    isModule = script.get("isModule", None)
+    if isModule:
+        return "module"
+    return "script"
+
+def get_script_initiator(script) -> str:
+    initiator = script.get("stackTrace", None)
+    if initiator:
+        initiator = initiator.get("callFrames", None)[0]
+        if initiator:
+            initiator = initiator.get("scriptId", None)
+    return initiator
+
+def script_parsed(script) -> None:
+
+    """
+    This function is called when a new script is parsed, saving the script info.
+    """
+
+    node = Script.ScriptNode(
+        script["scriptId"],
+        script["url"],
+        script["executionContextId"],
+        get_script_type(script),
+        get_script_initiator(script),
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(node.to_dict())
+
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
@@ -233,3 +268,11 @@ def execution_context_events(cdp_session) -> None:
     """
 
     cdp_session.on("Runtime.executionContextCreated", execution_context_created)
+
+def script_events(cdp_session) -> None:
+
+    """
+    This function calls all the script events we need.
+    """
+
+    cdp_session.on("Debugger.scriptParsed", script_parsed)

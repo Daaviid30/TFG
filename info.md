@@ -7,6 +7,7 @@
 - En la primera petición al cargar una página el initiator no es como tal la url, porque no está cargada, pero
 por lo tanto a quien se lo asocio?.
 
+- Script initiator?? es necesario, no lo voy a unir con nada
 
 ### Memoria en LAtex
 https://github.com/tairosonloa/UC3M_LaTeX_template
