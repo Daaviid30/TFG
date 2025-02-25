@@ -13,6 +13,7 @@ import node_objects.Page as Page
 import node_objects.Network as Network
 import node_objects.ExecutionContext as ExecutionContext
 import node_objects.Script as Script
+import node_objects.Extension as Extension
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -154,6 +155,40 @@ def request_sent(request) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
+#------------------------- EXTENSION FUNCTIONS ----------------------------
+
+def is_extension(execution_context) -> bool:
+
+    """
+    This function checks if the a execution context is from an extension.
+    """
+    if "chrome-extension" in execution_context.origin:
+        return True
+    return False
+
+def get_extension_id(origin) -> str:
+
+    """
+    This function gets the extension id from the origin.
+    origin structure: chrome-extension://extension_id
+    """
+    return origin.split("//")[1]
+
+def extension_found(execution_context) -> None:
+
+    """
+    This function is called when an extension is found, saving the extension info.
+    """
+
+    node = Extension.ExtensionNode(
+        get_extension_id(execution_context.origin),
+        execution_context.name,
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(node.to_dict())
+
 #----------------------- EXECUTION CONTEXT FUNCTIONS ---------------------
 
 def get_execution_context_type(execution_context) -> str:
@@ -184,6 +219,10 @@ def execution_context_created(execution_context) -> None:
     )
     # Add the node to the report
     report_json.append(node.to_dict())
+
+    # Call the extension functions
+    if is_extension(node):
+        extension_found(node)
 
 #------------------------- DEBUGGER FUNCTIONS ----------------------------
 

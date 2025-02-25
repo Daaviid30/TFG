@@ -9,6 +9,9 @@ por lo tanto a quien se lo asocio?.
 
 - Script initiator?? es necesario, no lo voy a unir con nada
 
+- El nodo extensión como tal tiene alguna utilidad o se puede omitir? De momento esta creado junto al metodo de execution
+context.
+
 ### Memoria en LAtex
 https://github.com/tairosonloa/UC3M_LaTeX_template
 
