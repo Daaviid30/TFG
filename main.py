@@ -53,6 +53,7 @@ async def run(playwright: Playwright) -> None:
     # Call CDP functions
     target_events(cdp_session)
     page_events(cdp_session)
+    network_events(cdp_session)
 
     # Navigation activities
     await page.goto("https://cosec.inf.uc3m.es")

@@ -10,6 +10,7 @@ import asyncio
 import json
 import node_objects.Target as Target
 import node_objects.Page as Page
+import node_objects.Network as Network
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -115,11 +116,41 @@ def page_navigated(page) -> None:
 
 #---------------------------- NETWORK FUNCTIONS --------------------------
 
+def get_initiator(request) -> str:
+
+    """
+    This function gets the initiator of a request.
+    """
+
+    initiator = request.get("initiator", None) # Tries to get the initiator object
+    if initiator:
+        initiator_type = initiator["type"]
+        if initiator_type == "parser": # Parser initiator is the url of the requester
+            return initiator.get("url", None)
+        elif initiator_type == "script": # For script, we try to get his ID
+            script_id = initiator.get("stack", None).get("callFrames", None)[0].get("scriptId",None)
+            if script_id:
+                return script_id
+        else: # If we do not found any of the previous data, we use the requester url as initiator
+            return initiator.get("url", request["documentURL"])
+    return request["documentURL"]
+
 def request_sent(request) -> None:
 
     """
     This function is called when a new request is sent, saving the request info.
     """
+    node = Network.NetworkNode(
+        request["requestId"],
+        request["documentURL"],
+        request["request"]["url"],
+        request.get("frameId", None),
+        get_initiator(request),
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(node.to_dict())
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
