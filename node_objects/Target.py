@@ -8,12 +8,13 @@ This script contains the TargetNode class, which is used to represent a target n
 class TargetNode:
 
     # Constructor definition
-    def __init__(self, targetID: str, type: str, event: str, timestamp: int) -> None:
+    def __init__(self, targetID: str, type: str, event: str, url: str, timestamp: int) -> None:
 
         self.nodeType = "target"
         self.targetID = targetID
         self.type = type
         self.event = event
+        self.url = url
         self.timestamp = timestamp
 
     # str method definition, used to print the object
@@ -23,6 +24,7 @@ class TargetNode:
             \t- targetID: {self.targetID}\n\
             \t- type: {self.type}\n\
             \t- event: {self.event}\n\
+            \t- url: {self.url}\n\
             \t- timestamp: {self.timestamp}\n"
         
         return target_str
@@ -35,6 +37,7 @@ class TargetNode:
             "targetID": self.targetID,
             "type": self.type,
             "event": self.event,
+            "url": self.url,
             "timestamp": self.timestamp
         }
         return dict

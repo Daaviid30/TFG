@@ -45,6 +45,7 @@ def get_targets(targets) -> None:
             target["targetId"],
             target["type"],
             "create",
+            target["url"],
             timeUtils.generate_timestamp()
         )
         # Add the node to the report
@@ -62,6 +63,7 @@ def target_created(target) -> None:
         target_info["targetId"],
         target_info["type"],
         "create",
+        target_info["url"],
         timeUtils.generate_timestamp()
     )
     # Add the node to the report
@@ -79,6 +81,7 @@ def target_info_changed(target) -> None:
         target_info["targetId"],
         target_info["type"],
         "change",
+        target_info["url"],
         timeUtils.generate_timestamp()
     )
     # Add the node to the report

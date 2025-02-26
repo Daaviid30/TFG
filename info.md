@@ -2,15 +2,16 @@
 
 **Dudas que preguntar**
 
-- Target.infoChanged es necesario? si nos fijamos indica que cambia la info del target pero en nuestros datos no cambia nada.
+**Tareas que hacer**
 
-- En la primera petición al cargar una página el initiator no es como tal la url, porque no está cargada, pero
-por lo tanto a quien se lo asocio?.
+1. Realizar los tres nodos faltantes:
+- DOMElement: Mediante breakpoints al captar el elemento childapendNode
+- EventLister: Mediante DOMDebugger.getEventListeners
+- API Call: Mediante un proxy en el codigo
 
-- Script initiator?? es necesario, no lo voy a unir con nada
+2. Cambiar initiator por ID de page
 
-- El nodo extensión como tal tiene alguna utilidad o se puede omitir? De momento esta creado junto al metodo de execution
-context.
+3. Añadir el objeto page con su ID
 
 ### Memoria en LAtex
 https://github.com/tairosonloa/UC3M_LaTeX_template
