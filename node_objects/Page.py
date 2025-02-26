@@ -8,8 +8,9 @@ This script contains the PageNode class, which is used to represent a page node 
 class PageNode:
 
     # Constructor definition
-    def __init__(self, frameID: str, url: str, loaderID: str, timestamp: int) -> None:
+    def __init__(self, pageID: str, frameID: str, url: str, loaderID: str, timestamp: int) -> None:
         self.nodeType = "page"
+        self.pageID = pageID
         self.frameID = frameID
         self.url = url
         self.loaderID = loaderID
@@ -19,6 +20,7 @@ class PageNode:
     def __str__(self) -> str:
 
         page_str = f"Node {self.nodeType}:\n\
+            \t- pageID: {self.pageID}\n\
             \t- frameID: {self.frameID}\n\
             \t- url: {self.url}\n\
             \t- loaderID: {self.loaderID}\n\
@@ -31,6 +33,7 @@ class PageNode:
 
         dict = {
             "nodeType": self.nodeType,
+            "pageID": self.pageID,
             "frameID": self.frameID,
             "url": self.url,
             "loaderID": self.loaderID,

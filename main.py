@@ -78,6 +78,8 @@ async def run(playwright: Playwright) -> None:
 
     print(f"{greenColour}[+]{endColour}{grayColour} Program finished{endColour}")
 
+    print(page_IDs)
+
 #--------------------------- MAIN FUNCTION CALL --------------------------
 
 async def main():

@@ -26,6 +26,9 @@ report_json = [] # List of dictionaries that contains all the nodes
 
 async def generate_json_report() -> None:
 
+    await page_associate_id()
+    await initiator_associate_page()
+
     with open("report.json", "w") as report:
         json.dump(report_json, report, indent=4)
 
@@ -51,6 +54,10 @@ def get_targets(targets) -> None:
         # Add the node to the report
         report_json.append(node.to_dict())
 
+        # Call the page functions if target is a page
+    if node.type == "page":
+        store_page_id(node)
+
 def target_created(target) -> None:
 
     """
@@ -68,6 +75,10 @@ def target_created(target) -> None:
     )
     # Add the node to the report
     report_json.append(node.to_dict())
+
+    # Call the page functions if target is a page
+    if node.type == "page":
+        store_page_id(node)
 
 def target_info_changed(target) -> None:
 
@@ -87,6 +98,10 @@ def target_info_changed(target) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
+    # Call the page functions if target is a page
+    if node.type == "page":
+        store_page_id(node)
+
 def target_destroyed(target) -> None:
 
     """
@@ -104,6 +119,18 @@ def target_destroyed(target) -> None:
 
 #---------------------------- PAGE FUNCTIONS -----------------------------
 
+# Dictionary that stores all the page IDs we create
+page_IDs = {}
+
+def store_page_id(target) -> None:
+
+    """
+    This function stores the page ID of a page.
+    """
+    if target.url not in page_IDs.keys():
+        id = "page" + str(len(page_IDs))
+        page_IDs[target.url] = id
+
 def page_navigated(page) -> None:
 
     """
@@ -112,6 +139,7 @@ def page_navigated(page) -> None:
 
     frame = page["frame"]
     node = Page.PageNode(
+        "pageID",
         frame["id"],
         frame["url"],
         frame["loaderId"],
@@ -119,6 +147,16 @@ def page_navigated(page) -> None:
     )
     # Add the node to the report
     report_json.append(node.to_dict())
+
+async def page_associate_id() -> None:
+
+    """
+    This function is called at the end of the program, associating the page ID to the page node.
+    """
+
+    for node in report_json:
+        if node["nodeType"] == "page":
+            node["pageID"] = page_IDs[node["url"]]
 
 #---------------------------- NETWORK FUNCTIONS --------------------------
 
@@ -140,6 +178,16 @@ def get_initiator(request) -> str:
         else: # If we do not found any of the previous data, we use the requester url as initiator
             return initiator.get("url", request["documentURL"])
     return request["documentURL"]
+
+async def initiator_associate_page() -> None:
+
+    """
+    This function is called at the end of the program, associating the network initiator to the page node.
+    """
+
+    for node in report_json:
+        if node["nodeType"] == "network" and node["initiator"] in page_IDs.keys():
+            node["initiator"] = page_IDs[node["initiator"]]
 
 def request_sent(request) -> None:
 
