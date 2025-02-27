@@ -14,6 +14,7 @@ import node_objects.Network as Network
 import node_objects.ExecutionContext as ExecutionContext
 import node_objects.Script as Script
 import node_objects.Extension as Extension
+import node_objects.DOMElement as DOMElement
 import utils.timeUtils as timeUtils
 
 #---------------------------- JSON FUNCTIONS ----------------------------
@@ -309,6 +310,34 @@ def script_parsed(script) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
+#---------------------------- DOM FUNCTIONS -----------------------------
+
+async def get_DOM_initiator() -> str:
+
+    """
+    This function gets the DOM initiator, searching for the script id.
+    """
+
+async def child_node_inserted(element) -> None:
+
+    """
+    This function is called when a new child node is inserted, saving the child node info.
+    """
+    # Pause the debugger in order to get the initiator
+    element = element["node"]
+
+    node = DOMElement.DOMElementNode(
+        element["nodeId"],
+        element["nodeType"],
+        element["nodeName"],
+        get_DOM_initiator(),
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(node.to_dict())
+    
+
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
@@ -323,7 +352,7 @@ async def enable_events(cdp_session) -> None:
     await cdp_session.send("Debugger.enable")
     await cdp_session.send("Target.setDiscoverTargets", {"discover": True})
     await cdp_session.send("Runtime.enable")
-
+    await cdp_session.send("DOM.enable")
 
 def target_events(cdp_session) -> None:
 
@@ -366,3 +395,11 @@ def script_events(cdp_session) -> None:
     """
 
     cdp_session.on("Debugger.scriptParsed", script_parsed)
+
+async def DOM_events(cdp_session) -> None:
+
+    """
+    This function calls all the DOM events we need.
+    """
+    
+    await cdp_session.on("DOM.childNodeInserted", child_node_inserted)

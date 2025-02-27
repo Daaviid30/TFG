@@ -56,6 +56,7 @@ async def run(playwright: Playwright) -> None:
     network_events(cdp_session)
     execution_context_events(cdp_session)
     script_events(cdp_session)
+    DOM_events(cdp_session)
 
     # Navigation activities
     await page.goto("https://cosec.inf.uc3m.es")
@@ -77,8 +78,6 @@ async def run(playwright: Playwright) -> None:
     await generate_json_report()
 
     print(f"{greenColour}[+]{endColour}{grayColour} Program finished{endColour}")
-
-    print(page_IDs)
 
 #--------------------------- MAIN FUNCTION CALL --------------------------
 
