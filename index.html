@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Insertar nodo en el DOM</title>
+</head>
+<body>
+  <button id="boton-insertar">Insertar nodo</button>
+  <div id="contenedor"></div>
+
+  <script>
+    const botonInsertar = document.getElementById('boton-insertar');
+    const contenedor = document.getElementById('contenedor');
+
+    botonInsertar.addEventListener('click', () => {
+      const nuevoNodo = document.createElement('p');
+      nuevoNodo.textContent = 'Este es un nodo nuevo';
+      contenedor.appendChild(nuevoNodo);
+    });
+  </script>
+</body>
+</html>

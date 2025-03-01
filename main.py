@@ -45,6 +45,9 @@ async def run(playwright: Playwright) -> None:
 
     # Enable the events that we want to capture
     await enable_events(cdp_session)
+
+    # Set the breakpoints needed
+    await set_breakpoints(cdp_session)
     
     # Calling get_targets at the beginning of the program
     targets = await cdp_session.send("Target.getTargets")
@@ -57,9 +60,10 @@ async def run(playwright: Playwright) -> None:
     execution_context_events(cdp_session)
     script_events(cdp_session)
     DOM_events(cdp_session)
+    paused_events(cdp_session)
 
     # Navigation activities
-    await page.goto("https://cosec.inf.uc3m.es")
+    await page.goto("http://127.0.0.1")
 
     # Browser context closing
     await page.wait_for_event("close", timeout=0)

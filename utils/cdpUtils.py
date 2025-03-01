@@ -17,6 +17,10 @@ import node_objects.Extension as Extension
 import node_objects.DOMElement as DOMElement
 import utils.timeUtils as timeUtils
 
+#---------------------------- GLOBAL VARIABLES --------------------------
+
+global breakpoint_scriptID
+
 #---------------------------- JSON FUNCTIONS ----------------------------
 
 """
@@ -312,31 +316,31 @@ def script_parsed(script) -> None:
 
 #---------------------------- DOM FUNCTIONS -----------------------------
 
-async def get_DOM_initiator() -> str:
-
-    """
-    This function gets the DOM initiator, searching for the script id.
-    """
-
-async def child_node_inserted(element) -> None:
-
+def child_node_inserted(element) -> None:
+    print("holaaaaaaa")
     """
     This function is called when a new child node is inserted, saving the child node info.
     """
     # Pause the debugger in order to get the initiator
-    element = element["node"]
+    element = element.get("node", element)
+    global breakpoint_scriptID
 
     node = DOMElement.DOMElementNode(
         element["nodeId"],
         element["nodeType"],
         element["nodeName"],
-        get_DOM_initiator(),
+        breakpoint_scriptID,
         timeUtils.generate_timestamp()
     )
 
     # Add the node to the report
     report_json.append(node.to_dict())
-    
+
+def child_node_updated(element) -> None:
+    try:
+        print(f"childNodeCountUpdated detected: {element}")
+    except Exception as e:
+        print(f"Error in child_node_updated: {e}")
 
 #---------------------------- CDP FUNCTIONS ------------------------------
 
@@ -353,6 +357,26 @@ async def enable_events(cdp_session) -> None:
     await cdp_session.send("Target.setDiscoverTargets", {"discover": True})
     await cdp_session.send("Runtime.enable")
     await cdp_session.send("DOM.enable")
+
+async def set_breakpoints(cdp_session) -> None:
+
+    """
+    This function sets the breakpoints needed.
+    """
+    # Create a breakpoint that allows us to pause the debugger en each DOM event
+    document = await cdp_session.send("DOM.getDocument", {"depth": -1})
+    document_nodeID = document["root"]["nodeId"]
+    await cdp_session.send("DOMDebugger.setDOMBreakpoint", {"nodeId": document_nodeID, "type": "subtree-modified"})
+
+async def on_debugger_paused(event, cdp_session) -> None:
+
+    """
+    This function resume the debugger and change the value of breakpoint_scriptID, which is the script that
+    have been executed when the debugger is paused.
+    """
+    global breakpoint_scriptID
+    breakpoint_scriptID = event["callFrames"][0]["scriptId"]
+    await cdp_session.send("Debugger.resume")
 
 def target_events(cdp_session) -> None:
 
@@ -396,10 +420,20 @@ def script_events(cdp_session) -> None:
 
     cdp_session.on("Debugger.scriptParsed", script_parsed)
 
-async def DOM_events(cdp_session) -> None:
+def DOM_events(cdp_session) -> None:
 
     """
     This function calls all the DOM events we need.
     """
-    
-    await cdp_session.on("DOM.childNodeInserted", child_node_inserted)
+
+    cdp_session.on("DOM.childNodeInserted", child_node_inserted)
+    cdp_session.on("DOM.childNodeCountUpdated", child_node_updated)
+    cdp_session.on("DOM.attributeModified", child_node_updated)
+
+def paused_events(cdp_session) -> None:
+
+    """
+    This function calls when the debugger is paused.
+    """
+
+    cdp_session.on("Debugger.paused", lambda params: on_debugger_paused(params, cdp_session))
