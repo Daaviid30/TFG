@@ -15,6 +15,7 @@ import node_objects.ExecutionContext as ExecutionContext
 import node_objects.Script as Script
 import node_objects.Extension as Extension
 import node_objects.DOMElement as DOMElement
+import node_objects.EventListener as EventListener
 import utils.timeUtils as timeUtils
 
 #---------------------------- GLOBAL VARIABLES --------------------------
@@ -354,6 +355,28 @@ async def child_node_updated(element, cdp_session) -> None:
     # Add the node to the report
     report_json.append(DOM_node.to_dict())
 
+#-------------------------- EVENT LISTENER FUNCTIONS ----------------------------
+
+async def event_listener_detected(cdp_session, object_id) -> None:
+    
+    """
+    This function is called when a event listener is detected, saving the event listener info.
+    """
+
+    for object in object_id:
+
+        event_listeners = await cdp_session.send("DOMDebugger.getEventListeners", {"objectId": object})
+        for event_listener in event_listeners["listeners"]:
+            node = EventListener.EventListenerNode(
+                event_listener["type"],
+                event_listener["useCapture"],
+                event_listener["once"],
+                event_listener["scriptId"],
+                timeUtils.generate_timestamp()
+            )
+
+            # Add the node to the report
+            report_json.append(node.to_dict())
 
 #---------------------------- CDP FUNCTIONS ------------------------------
 
@@ -390,6 +413,31 @@ async def on_debugger_paused(event, cdp_session) -> None:
     global breakpoint_scriptID
     breakpoint_scriptID = event["callFrames"][0]["location"]["scriptId"]
     await cdp_session.send("Debugger.resume")
+
+async def get_DOM_objects(cdp_session):
+    """
+    Returns all objectIds in the DOM.
+    """
+    # Get the document ID (all the DOM)
+    document_node = await cdp_session.send("DOM.getDocument", {"depth": -1})
+    document_nodeID = document_node["root"]["nodeId"]
+
+    # Get all the nodes
+    subtree = await cdp_session.send("DOM.querySelectorAll", {
+        "nodeId": document_nodeID,
+        "selector": "*"  # All nodes are selected
+    })
+
+    object_ids = []
+
+    # Convert each nodeId to objectId
+    for nodeId in subtree["nodeIds"]:
+        object_result = await cdp_session.send("DOM.resolveNode", {"nodeId": nodeId})
+        if "object" in object_result:
+            object_id = object_result["object"]["objectId"]
+            object_ids.append(object_id)
+
+    return object_ids
 
 def target_events(cdp_session) -> None:
 
@@ -449,3 +497,12 @@ def paused_events(cdp_session) -> None:
     """
 
     cdp_session.on("Debugger.paused", lambda params: on_debugger_paused(params, cdp_session))
+
+async def event_listener_events(cdp_session) -> None:
+
+    """
+    This function calls all the event listener events we need.
+    """
+
+    object_ids = await get_DOM_objects(cdp_session)
+    await event_listener_detected(cdp_session, object_ids)

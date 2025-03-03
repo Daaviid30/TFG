@@ -14,6 +14,12 @@
     botonInsertar.addEventListener('click', () => {
       const nuevoNodo = document.createElement('p');
       nuevoNodo.textContent = 'Este es un nodo nuevo';
+
+      // Agregar un event listener al nuevo nodo
+      nuevoNodo.addEventListener('click', () => {
+        alert('¡Has hecho clic en el nuevo nodo!');
+      });
+
       contenedor.appendChild(nuevoNodo);
     });
   </script>
