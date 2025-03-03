@@ -317,7 +317,6 @@ def script_parsed(script) -> None:
 #---------------------------- DOM FUNCTIONS -----------------------------
 
 def child_node_inserted(element) -> None:
-    print("holaaaaaaa")
     """
     This function is called when a new child node is inserted, saving the child node info.
     """
@@ -336,11 +335,25 @@ def child_node_inserted(element) -> None:
     # Add the node to the report
     report_json.append(node.to_dict())
 
-def child_node_updated(element) -> None:
-    try:
-        print(f"childNodeCountUpdated detected: {element}")
-    except Exception as e:
-        print(f"Error in child_node_updated: {e}")
+async def child_node_updated(element, cdp_session) -> None:
+    
+    """
+    This function is called when a child node is updated, saving the child node info.
+    """
+    node = await cdp_session.send("DOM.describeNode", {"nodeId": element["nodeId"]})
+    node = node["node"]
+
+    DOM_node = DOMElement.DOMElementNode(
+        node["nodeId"],
+        node["nodeType"],
+        node["nodeName"],
+        breakpoint_scriptID,
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(DOM_node.to_dict())
+
 
 #---------------------------- CDP FUNCTIONS ------------------------------
 
@@ -375,7 +388,7 @@ async def on_debugger_paused(event, cdp_session) -> None:
     have been executed when the debugger is paused.
     """
     global breakpoint_scriptID
-    breakpoint_scriptID = event["callFrames"][0]["scriptId"]
+    breakpoint_scriptID = event["callFrames"][0]["location"]["scriptId"]
     await cdp_session.send("Debugger.resume")
 
 def target_events(cdp_session) -> None:
@@ -427,8 +440,7 @@ def DOM_events(cdp_session) -> None:
     """
 
     cdp_session.on("DOM.childNodeInserted", child_node_inserted)
-    cdp_session.on("DOM.childNodeCountUpdated", child_node_updated)
-    cdp_session.on("DOM.attributeModified", child_node_updated)
+    cdp_session.on("DOM.childNodeCountUpdated", lambda params: child_node_updated(params, cdp_session))
 
 def paused_events(cdp_session) -> None:
 

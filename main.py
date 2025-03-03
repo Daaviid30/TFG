@@ -48,6 +48,12 @@ async def run(playwright: Playwright) -> None:
 
     # Set the breakpoints needed
     await set_breakpoints(cdp_session)
+
+    # Handler for reconfiguration of the CDP session after a navigation
+    async def on_frame_navigated(frame):
+        if frame == page.main_frame:
+                await enable_events(cdp_session)
+                await set_breakpoints(cdp_session)
     
     # Calling get_targets at the beginning of the program
     targets = await cdp_session.send("Target.getTargets")
@@ -62,8 +68,10 @@ async def run(playwright: Playwright) -> None:
     DOM_events(cdp_session)
     paused_events(cdp_session)
 
+    page.on("framenavigated", on_frame_navigated)
+
     # Navigation activities
-    await page.goto("http://127.0.0.1")
+    await page.goto("https://cosec.inf.uc3m.es")
 
     # Browser context closing
     await page.wait_for_event("close", timeout=0)

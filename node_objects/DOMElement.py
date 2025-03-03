@@ -12,7 +12,7 @@ class DOMElementNode:
 
         self.nodeType = "domElement"
         self.elementID = elementID
-        self.type = type
+        self.type = self.node_type(type)
         self.name = name
         self.initiator = initiator
         self.timestamp = timestamp
@@ -42,3 +42,18 @@ class DOMElementNode:
         }
 
         return dict
+    
+    def node_type(self, type: int) -> str:
+        
+        """
+        CDP returns the node type as a integer, so this method returns the node type as a string
+        """
+        # Types 5, 6 and 12 are not used nowadays.
+        node_types = ["Element", "Attribute", "Text", "CDATASection", "", "", "ProcessingInstruction", "Comment", "Document", "DocumentType", "DocumentFragment", ""]
+        type -= 1
+
+        try:
+            node_type = node_types[type]
+            return node_type
+        except:
+            return ""
