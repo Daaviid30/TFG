@@ -26,3 +26,7 @@ https://github.com/tairosonloa/UC3M_LaTeX_template
 
 ### Red de neuronas con grafo:
 torch_geometric
+
+gephi.org
+
+scikit-network
