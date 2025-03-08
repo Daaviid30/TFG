@@ -16,11 +16,16 @@ import node_objects.Script as Script
 import node_objects.Extension as Extension
 import node_objects.DOMElement as DOMElement
 import node_objects.EventListener as EventListener
+import node_objects.ApiCall as ApiCall
 import utils.timeUtils as timeUtils
 
 #---------------------------- GLOBAL VARIABLES --------------------------
 
 global breakpoint_scriptID
+global apiCallPending
+apiCallPending = False
+global apiCallName
+apiCallName = ""
 
 #---------------------------- JSON FUNCTIONS ----------------------------
 
@@ -378,6 +383,23 @@ async def event_listener_detected(cdp_session, object_id) -> None:
             # Add the node to the report
             report_json.append(node.to_dict())
 
+#-------------------------- API CALLS FUNCTIONS --------------------------
+
+def api_call_saved(apiCall, scriptID) -> None:
+
+    """
+    This function is called when an api call is detected, saving the api call info.
+    """
+
+    node = ApiCall.ApiCallNode(
+        apiCall,
+        scriptID,
+        timeUtils.generate_timestamp()
+    )
+
+    # Add the node to the report
+    report_json.append(node.to_dict())
+
 #---------------------------- CDP FUNCTIONS ------------------------------
 
 async def enable_events(cdp_session) -> None:
@@ -404,14 +426,20 @@ async def set_breakpoints(cdp_session) -> None:
     document_nodeID = document["root"]["nodeId"]
     await cdp_session.send("DOMDebugger.setDOMBreakpoint", {"nodeId": document_nodeID, "type": "subtree-modified"})
 
-async def on_debugger_paused(event, cdp_session) -> None:
+async def on_debugger_paused(event, cdp_session, apiCall = None) -> None:
 
     """
     This function resume the debugger and change the value of breakpoint_scriptID, which is the script that
     have been executed when the debugger is paused.
     """
     global breakpoint_scriptID
+    global apiCallPending
     breakpoint_scriptID = event["callFrames"][0]["location"]["scriptId"]
+    print(apiCallPending)
+    if apiCallPending:
+        print("yes")
+        api_call_saved(apiCallName, breakpoint_scriptID)
+        apiCallPending = False
     await cdp_session.send("Debugger.resume")
 
 async def get_DOM_objects(cdp_session):

@@ -13,7 +13,7 @@ from playwright.async_api import async_playwright, Playwright
 import paths
 import utils.fileUtils as fileUtils
 import utils.timeUtils as timeUtils
-from utils.cdpUtils import *
+import utils.cdpUtils as cdpUtils
 from colours import *
 
 #------------------------- PREVIOUS INFORMATION DELETION -----------------
@@ -44,32 +44,46 @@ async def run(playwright: Playwright) -> None:
     cdp_session = await context.new_cdp_session(page)
 
     # Enable the events that we want to capture
-    await enable_events(cdp_session)
+    await cdpUtils.enable_events(cdp_session)
 
     # Set the breakpoints needed
-    await set_breakpoints(cdp_session)
+    await cdpUtils.set_breakpoints(cdp_session)
     # Event listener events
-    await event_listener_events(cdp_session)
+    await cdpUtils.event_listener_events(cdp_session)
+    # Hooks for capture API calls
+    async def api_call_detected(api_name):
+        cdpUtils.apiCallPending = True
+        cdpUtils.apiCallName = api_name
+        await cdp_session.send("Debugger.pause")
+
+    # Expose the api_call_detected function to save the API calls
+    await context.expose_function("pyNotify", api_call_detected)
+    # Read the javascript file where the proxy is defined
+    with open("hooks.js", "r", encoding="utf-8") as file:
+            hooks = file.read()
+    # Add the proxy and hooks to the context
+    await context.add_init_script(hooks)
 
     # Handler for reconfiguration of the CDP session after a navigation
     async def on_frame_navigated(frame):
         if frame == page.main_frame:
-                await enable_events(cdp_session)
-                await set_breakpoints(cdp_session)
-                await event_listener_events(cdp_session)
+                await cdpUtils.enable_events(cdp_session)
+                await cdpUtils.set_breakpoints(cdp_session)
+                await cdpUtils.event_listener_events(cdp_session)
+                await context.add_init_script(hooks)
     
     # Calling get_targets at the beginning of the program
     targets = await cdp_session.send("Target.getTargets")
-    get_targets(targets)
+    cdpUtils.get_targets(targets)
 
     # Call CDP functions
-    target_events(cdp_session)
-    page_events(cdp_session)
-    network_events(cdp_session)
-    execution_context_events(cdp_session)
-    script_events(cdp_session)
-    DOM_events(cdp_session)
-    paused_events(cdp_session)
+    cdpUtils.target_events(cdp_session)
+    cdpUtils.page_events(cdp_session)
+    cdpUtils.network_events(cdp_session)
+    cdpUtils.execution_context_events(cdp_session)
+    cdpUtils.script_events(cdp_session)
+    cdpUtils.DOM_events(cdp_session)
+    cdpUtils.paused_events(cdp_session)
 
     page.on("framenavigated", on_frame_navigated)
 
@@ -90,7 +104,7 @@ async def run(playwright: Playwright) -> None:
     fileUtils.remove_user_data()
 
     # Generation of the json report
-    await generate_json_report()
+    await cdpUtils.generate_json_report()
 
     print(f"{greenColour}[+]{endColour}{grayColour} Program finished{endColour}")
 
