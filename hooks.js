@@ -4,7 +4,8 @@
       // Check if the function in the main script is defined
         if (typeof window.pyNotify !== "undefined") {
             // Send the information
-            window.pyNotify(apiCall);
+            let origin = window.location.origin;
+            window.pyNotify(apiCall, origin);
         }
     }
 

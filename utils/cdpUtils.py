@@ -21,11 +21,15 @@ import utils.timeUtils as timeUtils
 
 #---------------------------- GLOBAL VARIABLES --------------------------
 
-global breakpoint_scriptID
-global apiCallPending
-apiCallPending = False
-global apiCallName
-apiCallName = ""
+global pending_api_call
+global api_call_url
+api_call_url = None
+
+class Breakpoint_scriptID:
+    def __init__(self):
+        self.scriptID = None # Almacena el script ID en una variable estática
+
+breakpoint_scriptID = Breakpoint_scriptID()
 
 #---------------------------- JSON FUNCTIONS ----------------------------
 
@@ -328,13 +332,12 @@ def child_node_inserted(element) -> None:
     """
     # Pause the debugger in order to get the initiator
     element = element.get("node", element)
-    global breakpoint_scriptID
 
     node = DOMElement.DOMElementNode(
         element["nodeId"],
         element["nodeType"],
         element["nodeName"],
-        breakpoint_scriptID,
+        breakpoint_scriptID.scriptID,
         timeUtils.generate_timestamp()
     )
 
@@ -353,7 +356,7 @@ async def child_node_updated(element, cdp_session) -> None:
         node["nodeId"],
         node["nodeType"],
         node["nodeName"],
-        breakpoint_scriptID,
+        breakpoint_scriptID.scriptID,
         timeUtils.generate_timestamp()
     )
 
@@ -426,20 +429,24 @@ async def set_breakpoints(cdp_session) -> None:
     document_nodeID = document["root"]["nodeId"]
     await cdp_session.send("DOMDebugger.setDOMBreakpoint", {"nodeId": document_nodeID, "type": "subtree-modified"})
 
-async def on_debugger_paused(event, cdp_session, apiCall = None) -> None:
+async def on_debugger_paused(event, cdp_session) -> None:
 
     """
     This function resume the debugger and change the value of breakpoint_scriptID, which is the script that
     have been executed when the debugger is paused.
     """
-    global breakpoint_scriptID
-    global apiCallPending
-    breakpoint_scriptID = event["callFrames"][0]["location"]["scriptId"]
-    print(apiCallPending)
-    if apiCallPending:
-        print("yes")
-        api_call_saved(apiCallName, breakpoint_scriptID)
-        apiCallPending = False
+    global pending_api_call
+    breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
+
+    if pending_api_call:
+        id = None
+        for node in report_json:
+            if node["nodeType"] == "script":
+                if api_call_url in node["url"]:
+                    id = node["scriptID"]
+        api_call_saved(pending_api_call, id)
+        pending_api_call = None
+
     await cdp_session.send("Debugger.resume")
 
 async def get_DOM_objects(cdp_session):
@@ -534,3 +541,7 @@ async def event_listener_events(cdp_session) -> None:
 
     object_ids = await get_DOM_objects(cdp_session)
     await event_listener_detected(cdp_session, object_ids)
+
+def get_script_id() -> str:
+
+    return breakpoint_scriptID.scriptID

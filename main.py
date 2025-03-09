@@ -51,9 +51,9 @@ async def run(playwright: Playwright) -> None:
     # Event listener events
     await cdpUtils.event_listener_events(cdp_session)
     # Hooks for capture API calls
-    async def api_call_detected(api_name):
-        cdpUtils.apiCallPending = True
-        cdpUtils.apiCallName = api_name
+    async def api_call_detected(api_name, origin):
+        cdpUtils.pending_api_call = api_name
+        cdpUtils.api_call_url = origin
         await cdp_session.send("Debugger.pause")
 
     # Expose the api_call_detected function to save the API calls
