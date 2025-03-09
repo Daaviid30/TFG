@@ -26,8 +26,11 @@ global api_call_url
 api_call_url = None
 
 class Breakpoint_scriptID:
+    """
+    Class that allows us to save the scriptID without using a global variable
+    """
     def __init__(self):
-        self.scriptID = None # Almacena el script ID en una variable estática
+        self.scriptID = None
 
 breakpoint_scriptID = Breakpoint_scriptID()
 
@@ -436,16 +439,19 @@ async def on_debugger_paused(event, cdp_session) -> None:
     have been executed when the debugger is paused.
     """
     global pending_api_call
-    breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
-
+    # When an API call is detected, we use a manual method for obtein the scriptID
     if pending_api_call:
-        id = None
+        script_id = None
+        # Search for the last script that have the same url of the API call
         for node in report_json:
             if node["nodeType"] == "script":
                 if api_call_url in node["url"]:
-                    id = node["scriptID"]
-        api_call_saved(pending_api_call, id)
+                    script_id = node["scriptID"]
+        # Method to save the API call
+        api_call_saved(pending_api_call, script_id)
         pending_api_call = None
+    else:
+        breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
 
     await cdp_session.send("Debugger.resume")
 

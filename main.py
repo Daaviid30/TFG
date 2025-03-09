@@ -50,13 +50,15 @@ async def run(playwright: Playwright) -> None:
     await cdpUtils.set_breakpoints(cdp_session)
     # Event listener events
     await cdpUtils.event_listener_events(cdp_session)
-    # Hooks for capture API calls
     async def api_call_detected(api_name, origin):
+        """
+        This function is called on hooks.js when an API call is detected
+        """
         cdpUtils.pending_api_call = api_name
-        cdpUtils.api_call_url = origin
+        cdpUtils.api_call_url = origin # The url of the script that makes the API call
         await cdp_session.send("Debugger.pause")
 
-    # Expose the api_call_detected function to save the API calls
+    # Expose the api_call_detected, so it can be called from hooks.js
     await context.expose_function("pyNotify", api_call_detected)
     # Read the javascript file where the proxy is defined
     with open("hooks.js", "r", encoding="utf-8") as file:
