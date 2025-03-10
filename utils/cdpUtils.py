@@ -21,10 +21,6 @@ import utils.timeUtils as timeUtils
 
 #---------------------------- GLOBAL VARIABLES --------------------------
 
-global pending_api_call
-global api_call_url
-api_call_url = None
-
 class Breakpoint_scriptID:
     """
     Class that allows us to save the scriptID without using a global variable
@@ -391,7 +387,7 @@ async def event_listener_detected(cdp_session, object_id) -> None:
 
 #-------------------------- API CALLS FUNCTIONS --------------------------
 
-def api_call_saved(apiCall, scriptID) -> None:
+def api_call_saved(apiCall, scriptID, scriptUrl) -> None:
 
     """
     This function is called when an api call is detected, saving the api call info.
@@ -400,6 +396,7 @@ def api_call_saved(apiCall, scriptID) -> None:
     node = ApiCall.ApiCallNode(
         apiCall,
         scriptID,
+        scriptUrl,
         timeUtils.generate_timestamp()
     )
 
@@ -438,21 +435,7 @@ async def on_debugger_paused(event, cdp_session) -> None:
     This function resume the debugger and change the value of breakpoint_scriptID, which is the script that
     have been executed when the debugger is paused.
     """
-    global pending_api_call
-    # When an API call is detected, we use a manual method for obtein the scriptID
-    if pending_api_call:
-        script_id = None
-        # Search for the last script that have the same url of the API call
-        for node in report_json:
-            if node["nodeType"] == "script":
-                if api_call_url in node["url"]:
-                    script_id = node["scriptID"]
-        # Method to save the API call
-        api_call_saved(pending_api_call, script_id)
-        pending_api_call = None
-    else:
-        breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
-
+    breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
     await cdp_session.send("Debugger.resume")
 
 async def get_DOM_objects(cdp_session):
@@ -547,7 +530,3 @@ async def event_listener_events(cdp_session) -> None:
 
     object_ids = await get_DOM_objects(cdp_session)
     await event_listener_detected(cdp_session, object_ids)
-
-def get_script_id() -> str:
-
-    return breakpoint_scriptID.scriptID

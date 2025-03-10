@@ -14,6 +14,7 @@ import paths
 import utils.fileUtils as fileUtils
 import utils.timeUtils as timeUtils
 import utils.cdpUtils as cdpUtils
+import utils.apiCallUtils as apiCallUtils
 from colours import *
 
 #------------------------- PREVIOUS INFORMATION DELETION -----------------
@@ -50,16 +51,9 @@ async def run(playwright: Playwright) -> None:
     await cdpUtils.set_breakpoints(cdp_session)
     # Event listener events
     await cdpUtils.event_listener_events(cdp_session)
-    async def api_call_detected(api_name, origin):
-        """
-        This function is called on hooks.js when an API call is detected
-        """
-        cdpUtils.pending_api_call = api_name
-        cdpUtils.api_call_url = origin # The url of the script that makes the API call
-        await cdp_session.send("Debugger.pause")
 
     # Expose the api_call_detected, so it can be called from hooks.js
-    await context.expose_function("pyNotify", api_call_detected)
+    await context.expose_function("pyNotify", apiCallUtils.api_call_detected)
     # Read the javascript file where the proxy is defined
     with open("hooks.js", "r", encoding="utf-8") as file:
             hooks = file.read()
@@ -104,6 +98,9 @@ async def run(playwright: Playwright) -> None:
 
     # Delete user data
     fileUtils.remove_user_data()
+
+    # Create relation between api calls and scriptID
+    apiCallUtils.get_apiCallScriptIDs(cdpUtils.report_json)
 
     # Generation of the json report
     await cdpUtils.generate_json_report()

@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Insertar nodo en el DOM con Geolocalización</title>
-</head>
-<body>
-  <button id="boton-insertar">Insertar nodo</button>
-  <div id="contenedor"></div>
-
-  <script>
-    const botonInsertar = document.getElementById('boton-insertar');
+const botonInsertar = document.getElementById('boton-insertar');
     const contenedor = document.getElementById('contenedor');
 
     navigator.geolocation.getCurrentPosition(
@@ -31,6 +21,3 @@
 
       contenedor.appendChild(nuevoNodo);
     });
-  </script>
-</body>
-</html>
