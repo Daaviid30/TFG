@@ -1,11 +1,13 @@
 (function() {
     // This function send the information to the main script
-    function apiCallDetected(apiCall) {
+    async function apiCallDetected(apiCall) {
       // Check if the function in the main script is defined
         if (typeof window.pyNotify !== "undefined") {
             // Send the information
-            let origin = document.currentScript ? document.currentScript.src : "undefined";;
-            window.pyNotify(apiCall, origin);
+            window.pyNotify(apiCall);
+            // Stop the execution
+            debugger;
+
         }
     }
 
@@ -17,8 +19,8 @@
           get(target, prop, receiver) {
             // Intercept calls to navigator.geolocation
             if (typeof target[prop] === "function") {
-              return function(...args) {
-                apiCallDetected(`navigator.geolocation.${prop}`);
+              return async function(...args) {
+                await apiCallDetected(`navigator.geolocation.${prop}`);
                 // return the API call for a normal execution
                 return Reflect.apply(target[prop], target, args);
               };

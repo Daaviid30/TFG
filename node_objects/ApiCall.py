@@ -8,12 +8,11 @@ This script contains the ApiCallsNode class, which is used to represent api call
 class ApiCallNode:
 
     # Constructor definition
-    def __init__(self, apiCall: str, scriptID: str, scriptUrl: str, timestamp: int) -> None:
+    def __init__(self, apiCall: str, scriptID: str, timestamp: int) -> None:
 
         self.nodeType = "apiCall"
         self.apiCall = apiCall
         self.scriptID = scriptID
-        self.scriptUrl = scriptUrl
         self.timestamp = timestamp
 
     # str method definition, used to print the object
@@ -22,7 +21,6 @@ class ApiCallNode:
         apiCall_str = f"Node {self.nodeType}:\n\
             \t- apiCall: {self.apiCall}\n\
             \t- scriptID: {self.scriptID}\n\
-            \t- scriptUrl: {self.scriptUrl}\n\
             \t- timestamp: {self.timestamp}\n"
         
         return apiCall_str
@@ -34,7 +32,6 @@ class ApiCallNode:
             "nodeType": self.nodeType,
             "apiCall": self.apiCall,
             "scriptID": self.scriptID,
-            "scriptUrl": self.scriptUrl,
             "timestamp": self.timestamp
         }
 

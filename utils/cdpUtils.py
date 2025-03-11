@@ -21,6 +21,9 @@ import utils.timeUtils as timeUtils
 
 #---------------------------- GLOBAL VARIABLES --------------------------
 
+global apiCallName
+apiCallName = None
+
 class Breakpoint_scriptID:
     """
     Class that allows us to save the scriptID without using a global variable
@@ -387,7 +390,7 @@ async def event_listener_detected(cdp_session, object_id) -> None:
 
 #-------------------------- API CALLS FUNCTIONS --------------------------
 
-def api_call_saved(apiCall, scriptID, scriptUrl) -> None:
+def api_call_saved(apiCall, scriptID) -> None:
 
     """
     This function is called when an api call is detected, saving the api call info.
@@ -396,7 +399,6 @@ def api_call_saved(apiCall, scriptID, scriptUrl) -> None:
     node = ApiCall.ApiCallNode(
         apiCall,
         scriptID,
-        scriptUrl,
         timeUtils.generate_timestamp()
     )
 
@@ -435,7 +437,14 @@ async def on_debugger_paused(event, cdp_session) -> None:
     This function resume the debugger and change the value of breakpoint_scriptID, which is the script that
     have been executed when the debugger is paused.
     """
-    breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
+
+    global apiCallName
+    if event["reason"] == "DOM":
+        breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
+    else:
+        scriptID = event["callFrames"][0]["location"]["scriptId"]
+        api_call_saved(apiCallName, scriptID)
+        
     await cdp_session.send("Debugger.resume")
 
 async def get_DOM_objects(cdp_session):
