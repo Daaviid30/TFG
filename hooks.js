@@ -32,6 +32,42 @@
         configurable: true  
       });
       
-      
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.getUserMedia = new Proxy(navigator.mediaDevices.getUserMedia, {
+            apply(target, thisArg, args) {
+                apiCallDetected("navigator.mediaDevices.getUserMedia");
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+    }
+
+    if (navigator.clipboard) {
+        navigator.clipboard.readText = new Proxy(navigator.clipboard.readText, {
+            apply(target, thisArg, args) {
+                apiCallDetected("navigator.clipboard.readText");
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+
+        navigator.clipboard.writeText = new Proxy(navigator.clipboard.writeText, {
+            apply(target, thisArg, args) {
+                apiCallDetected("navigator.clipboard.writeText");
+                return Reflect.apply(target, thisArg, args);
+            }
+        });
+    }
+
+    window.fetch = new Proxy(window.fetch, {
+        apply(target, thisArg, args) {
+            apiCallDetected(`fetch -> ${args[0]}`);
+            return Reflect.apply(target, thisArg, args);
+        }
+    });
+
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        apiCallDetected(`XMLHttpRequest -> ${method} ${url}`);
+        return originalOpen.apply(this, arguments);
+    };
 
 })();
