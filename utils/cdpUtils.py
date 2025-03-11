@@ -22,7 +22,7 @@ import utils.timeUtils as timeUtils
 #---------------------------- GLOBAL VARIABLES --------------------------
 
 global apiCallName
-apiCallName = None
+apiCallName = ""
 
 class Breakpoint_scriptID:
     """
@@ -439,10 +439,11 @@ async def on_debugger_paused(event, cdp_session) -> None:
     """
 
     global apiCallName
+
     if event["reason"] == "DOM":
         breakpoint_scriptID.scriptID = event["callFrames"][0]["location"]["scriptId"]
     else:
-        scriptID = event["callFrames"][0]["location"]["scriptId"]
+        scriptID = event["callFrames"][-1]["location"]["scriptId"]
         api_call_saved(apiCallName, scriptID)
         
     await cdp_session.send("Debugger.resume")
@@ -465,10 +466,13 @@ async def get_DOM_objects(cdp_session):
 
     # Convert each nodeId to objectId
     for nodeId in subtree["nodeIds"]:
-        object_result = await cdp_session.send("DOM.resolveNode", {"nodeId": nodeId})
-        if "object" in object_result:
-            object_id = object_result["object"]["objectId"]
-            object_ids.append(object_id)
+        try:
+            object_result = await cdp_session.send("DOM.resolveNode", {"nodeId": nodeId})
+            if "object" in object_result:
+                object_id = object_result["object"]["objectId"]
+                object_ids.append(object_id)
+        except:
+            pass
 
     return object_ids
 
