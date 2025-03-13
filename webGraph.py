@@ -60,6 +60,11 @@ def create_graph(report: dict):
                 graph.add_edge(node["pageID"], node["executionContextID"])
             except:
                 pass
+        elif type == "extension":
+            try:
+                graph.add_edge(node["executionContextID"], node["extensionID"])
+            except:
+                pass
             
 
     # Export the graph to a gexf file (for Gephi visualitation)
