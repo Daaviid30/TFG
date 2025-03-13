@@ -18,24 +18,24 @@ def create_graph(report: dict):
     for node in report:
         type = node["nodeType"]
         if type == "apiCall":
-            graph.add_node(node["apiCall"], color = "#FF002E")
+            graph.add_node(node["apiCall"], viz={"color": {"r": 255, "g": 0, "b": 46}})
         elif type == "domElement":
-            graph.add_node(node["elementID"], color = "#FFC500")
+            graph.add_node(node["elementID"], viz={"color": {"r": 255, "g": 197, "b": 0}})
         elif type == "eventListener":
-            graph.add_node(node["type"], color = "#CDFF00")
+            graph.add_node(node["type"], viz={"color": {"r": 205, "g": 255, "b": 0}})
         elif type == "executionContext":
-            graph.add_node(node["executionContextID"], color = "#00FF00")
+            graph.add_node(node["executionContextID"], viz={"color": {"r": 0, "g": 255, "b": 0}})
         elif type == "extension":
-            graph.add_node(node["extensionID"], color = "#0000FF")
+            graph.add_node(node["extensionID"], viz={"color": {"r": 0, "g": 0, "b": 255}})
         elif type == "network":
-            graph.add_node(node["requestID"], color = "#00FFBD")
+            graph.add_node(node["requestID"], viz={"color": {"r": 0, "g": 255, "b": 189}})
         elif type == "page":
-            graph.add_node(node["pageID"], color = "#00D1FF")
+            graph.add_node(node["pageID"], viz={"color": {"r": 0, "g": 209, "b": 255}})
         elif type == "script":
-            graph.add_node(node["scriptID"], color = "#FF008F")
+            graph.add_node(node["scriptID"], viz={"color": {"r": 255, "g": 0, "b": 143}})
         elif type == "target":
             if node["event"] == "create":
-                graph.add_node(node["targetID"], color = "#909090")
+                graph.add_node(node["targetID"], viz={"color": {"r": 144, "g": 144, "b": 144}})
 
     # Export the graph to a gexf file (for Gephi visualitation)
     nx.write_gexf(graph, "webGraph.gexf")
