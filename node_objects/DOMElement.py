@@ -8,10 +8,10 @@ This script contains the DOMElementNode class, which is used to represent a DOM 
 class DOMElementNode:
 
     # Constructor definition
-    def __init__(self, elementID: str, type, name: str, initiator, timestamp: int) -> None:
+    def __init__(self, elementID, type, name: str, initiator, timestamp: int) -> None:
 
         self.nodeType = "domElement"
-        self.elementID = elementID
+        self.elementID = "domElement" + str(elementID)
         self.type = self.node_type(type)
         self.name = name
         self.initiator = initiator

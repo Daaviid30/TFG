@@ -5,9 +5,8 @@ This script contains all the functions needed to work with CDP (Chrome DevTools 
 
 #---------------------------- LIBRARIES IMPORT ---------------------------
 
-from playwright.async_api import async_playwright
-import asyncio
 import json
+import asyncio
 import node_objects.Target as Target
 import node_objects.Page as Page
 import node_objects.Network as Network
@@ -159,7 +158,7 @@ def page_navigated(page) -> None:
         "pageID",
         frame["id"],
         frame["url"],
-        frame["loaderId"],
+        frame["loaderId"], # Network ID
         timeUtils.generate_timestamp()
     )
     # Add the node to the report
@@ -189,9 +188,13 @@ def get_initiator(request) -> str:
         if initiator_type == "parser": # Parser initiator is the url of the requester
             return initiator.get("url", None)
         elif initiator_type == "script": # For script, we try to get his ID
-            script_id = initiator.get("stack", None).get("callFrames", None)[0].get("scriptId",None)
+            stack = initiator.get("stack", None)
+            if stack:
+                callFrame = stack.get("callFrames", None)[0]
+                if callFrame:
+                    script_id = callFrame.get("scriptId", None)
             if script_id:
-                return script_id
+                return "script" + script_id
         else: # If we do not found any of the previous data, we use the requester url as initiator
             return initiator.get("url", request["documentURL"])
     return request["documentURL"]
@@ -279,7 +282,7 @@ def execution_context_created(execution_context) -> None:
     context = execution_context["context"]
     node = ExecutionContext.ExecutionContextNode(
         context["id"],
-        context["origin"],
+        context["origin"], # URL
         context["name"],
         get_execution_context_type(context),
         get_execution_context_frameID(context),
@@ -306,6 +309,7 @@ def get_script_initiator(script) -> str:
         initiator = initiator.get("callFrames", None)[0]
         if initiator:
             initiator = initiator.get("scriptId", None)
+            return "script" + initiator
     return initiator
 
 def script_parsed(script) -> None:
@@ -339,7 +343,7 @@ def child_node_inserted(element) -> None:
         element["nodeId"],
         element["nodeType"],
         element["nodeName"],
-        breakpoint_scriptID.scriptID,
+        "script" + breakpoint_scriptID.scriptID,
         timeUtils.generate_timestamp()
     )
 
@@ -358,7 +362,7 @@ async def child_node_updated(element, cdp_session) -> None:
         node["nodeId"],
         node["nodeType"],
         node["nodeName"],
-        breakpoint_scriptID.scriptID,
+        "script" + breakpoint_scriptID.scriptID,
         timeUtils.generate_timestamp()
     )
 

@@ -12,7 +12,7 @@ class ExecutionContextNode:
     def __init__(self, executionContextID: int, origin: str, name: str, type: str, frameID: str, timestamp: int) -> None:
 
         self.nodeType = "executionContext"
-        self.executionContextID = executionContextID
+        self.executionContextID = "executionContext" + str(executionContextID)
         self.origin = origin
         self.name = name
         self.type = type

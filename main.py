@@ -14,7 +14,6 @@ import paths
 import utils.fileUtils as fileUtils
 import utils.timeUtils as timeUtils
 import utils.cdpUtils as cdpUtils
-import utils.apiCallUtils as apiCallUtils
 from colours import *
 
 #------------------------- PREVIOUS INFORMATION DELETION -----------------

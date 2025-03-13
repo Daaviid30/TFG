@@ -12,7 +12,7 @@ class ApiCallNode:
 
         self.nodeType = "apiCall"
         self.apiCall = apiCall
-        self.scriptID = scriptID
+        self.scriptID = "script" + scriptID
         self.timestamp = timestamp
 
     # str method definition, used to print the object

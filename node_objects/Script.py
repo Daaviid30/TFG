@@ -11,9 +11,9 @@ class ScriptNode:
     def __init__(self, scriptID: str, url: str, executionContextID: int, type: str, initiator: str, timestamp: int) -> None:
 
         self.nodeType = "script"
-        self.scriptID = scriptID
+        self.scriptID = "script" + scriptID
         self.url = url
-        self.executionContextID = executionContextID
+        self.executionContextID = "executionContext" + str(executionContextID)
         self.type = type
         self.initiator = initiator
         self.timestamp = timestamp

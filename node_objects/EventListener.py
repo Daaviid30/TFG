@@ -13,7 +13,7 @@ class EventListenerNode:
         self.type = type
         self.useCapture = useCapture
         self.once = once
-        self.scriptID = scriptID
+        self.scriptID = "script" + scriptID
         self.timestamp = timestamp
 
     # str method, used to print the node
