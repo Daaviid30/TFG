@@ -14,6 +14,7 @@ import paths
 import utils.fileUtils as fileUtils
 import utils.timeUtils as timeUtils
 import utils.cdpUtils as cdpUtils
+from webGraph import create_graph
 from colours import *
 
 #------------------------- PREVIOUS INFORMATION DELETION -----------------
@@ -102,6 +103,12 @@ async def run(playwright: Playwright) -> None:
 
     # Generation of the json report
     await cdpUtils.generate_json_report()
+
+    # Generation of Web Graph
+    print(f"{greenColour}[+]{endColour}{grayColour} Creating Web Graph...{endColour}")
+    create_graph(cdpUtils.report_json)
+    print(f"{greenColour}[+]{endColour}{grayColour} Web Graph finished{endColour}")
+    
 
     print(f"{greenColour}[+]{endColour}{grayColour} Program finished{endColour}")
 
