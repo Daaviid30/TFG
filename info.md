@@ -9,16 +9,11 @@ supongo que sin tener el timestamp en cuenta.
 
 **Tareas que hacer**
 
-1. Realizar los tres nodos faltantes:
-- DOMElement: Mediante breakpoints al captar el elemento childapendNode ✅
-- EventLister: Mediante DOMDebugger.getEventListeners ✅
-- API Call: Mediante un proxy en el codigo
+1. Poner a todos los objetos un ID con el que se pueda identificar
 
-2. Cambiar initiator por ID de page ✅
+2. Crear las relaciones con el nodo network
 
-3. Añadir el objeto page con su ID ✅
-
-4. Añadir time sleep al principio para que cargen todo los eventos antes de iniciar la navegación
+3. Limpiar atributos que no sirvan de nada
 
 ### Memoria en LAtex
 https://github.com/tairosonloa/UC3M_LaTeX_template
