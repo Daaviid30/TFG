@@ -65,6 +65,26 @@ def create_graph(report: dict):
                 graph.add_edge(node["executionContextID"], node["extensionID"])
             except:
                 pass
+        elif type == "script":
+            try:
+                graph.add_edge(node["executionContextID"], node["scriptID"])
+            except:
+                pass
+        elif type == "domElement":
+            try:
+                graph.add_edge(node["initiator"], node["elementID"])
+            except:
+                pass
+        elif type == "apiCall":
+            try:
+                graph.add_edge(node["scriptID"], node["apiCall"])
+            except:
+                pass
+        elif type == "eventListener":
+            try:
+                graph.add_edge(node["scriptID"], node["type"])
+            except:
+                pass
             
 
     # Export the graph to a gexf file (for Gephi visualitation)

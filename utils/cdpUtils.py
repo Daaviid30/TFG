@@ -253,7 +253,7 @@ def extension_found(execution_context) -> None:
 
     node = Extension.ExtensionNode(
         get_extension_id(execution_context.origin),
-        execution_context.executionContextId,
+        execution_context.executionContextID,
         execution_context.name,
         timeUtils.generate_timestamp()
     )
