@@ -51,7 +51,15 @@ def create_graph(report: dict):
     for node in report:
         type = node["nodeType"]
         if type == "page":
-            graph.add_edge(node["frameID"], node["pageID"])
+            try:
+                graph.add_edge(node["frameID"], node["pageID"])
+            except:
+                pass
+        elif type == "executionContext":
+            try:
+                graph.add_edge(node["pageID"], node["executionContextID"])
+            except:
+                pass
             
 
     # Export the graph to a gexf file (for Gephi visualitation)

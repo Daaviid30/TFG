@@ -283,6 +283,7 @@ def execution_context_created(execution_context) -> None:
     node = ExecutionContext.ExecutionContextNode(
         context["id"],
         context["origin"], # URL
+        next(reversed(page_IDs.values())), # Last page active
         context["name"],
         get_execution_context_type(context),
         get_execution_context_frameID(context),
