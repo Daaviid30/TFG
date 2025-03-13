@@ -457,6 +457,7 @@ async def get_DOM_objects(cdp_session):
     Returns all objectIds in the DOM.
     """
     # Get the document ID (all the DOM)
+    await asyncio.sleep(1)
     document_node = await cdp_session.send("DOM.getDocument", {"depth": -1})
     document_nodeID = document_node["root"]["nodeId"]
 
