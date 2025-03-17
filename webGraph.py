@@ -68,6 +68,8 @@ def create_graph(report: dict):
         elif type == "script":
             try:
                 graph.add_edge(node["executionContextID"], node["scriptID"])
+                if node["initiator"]:
+                    graph.add_edge(node["initiator"], node["scriptID"])
             except:
                 pass
         elif type == "domElement":
@@ -84,6 +86,16 @@ def create_graph(report: dict):
             try:
                 graph.add_edge(node["scriptID"], node["type"])
             except:
+                pass
+        elif type == "network":
+            try:
+                graph.add_edge(node["initiator"], node["requestID"])
+                for node2 in report:
+                    if (node2["nodeType"] == "script") and (node["targetUrl"] == node2["url"]) \
+                    and (node["timestamp"] < node2["timestamp"]):
+                        graph.add_edge(node["requestID"], node2["scriptID"])
+            except Exception as e:
+                print(e)
                 pass
             
 
