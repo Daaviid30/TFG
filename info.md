@@ -9,11 +9,9 @@ supongo que sin tener el timestamp en cuenta.
 
 **Tareas que hacer**
 
-1. Poner a todos los objetos un ID con el que se pueda identificar
+1. Adjuntar atributos a los nodos y a las relaciones
 
-2. Crear las relaciones con el nodo network
-
-3. Limpiar atributos que no sirvan de nada
+2. Limpiar atributos que no sirvan de nada
 
 ### Memoria en LAtex
 https://github.com/tairosonloa/UC3M_LaTeX_template
