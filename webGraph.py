@@ -82,22 +82,17 @@ def create_graph(report: dict):
                 pass
         elif type == "network":
             try:
-                if "page" in node["initiator"] and (node["senderUrl"] == node["targetUrl"]):
-                    initiator = node["initiator"]
-                    num = int(initiator[4:]) - 1
-                    new_initiator = f"page{num}"
-                    graph.add_edge(new_initiator, node["requestID"])
-                else:
-                    graph.add_edge(node["initiator"], node["requestID"])
-
-                for node2 in report:
-                    if (node2["nodeType"] == "script") and (node["targetUrl"] == node2["url"]) \
-                    and (node["timestamp"] < node2["timestamp"]):
-                        graph.add_edge(node["requestID"], node2["scriptID"])
-
-                    if (node2["nodeType"] == "page") and (node["targetUrl"] == node2["url"]) \
-                    and (node["timestamp"] < node2["timestamp"]):
-                        graph.add_edge(node["requestID"], node2["pageID"])
+                if "page" in node["initiator"]:
+                    graph.add_edge(node["senderUrl"], node["requestID"])
+                
+                if "page" in node["targetUrl"]:
+                    graph.add_edge(node["requestID"], node["targetUrl"])
+                else: 
+                    for node2 in report:
+                        if (node2["nodeType"] == "script") and (node["targetUrl"] == node2["url"]) \
+                        and (node["timestamp"] < node2["timestamp"]):
+                            graph.add_edge(node["requestID"], node2["scriptID"])
+                            break
                 
                 
             except Exception as e:

@@ -11,6 +11,8 @@ supongo que sin tener el timestamp en cuenta.
 
 1. Adjuntar atributos a los nodos y a las relaciones
 
+2. Actual_page.
+
 2. Limpiar atributos que no sirvan de nada
 
 ### Memoria en LAtex

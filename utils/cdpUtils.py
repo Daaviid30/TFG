@@ -22,6 +22,8 @@ import utils.timeUtils as timeUtils
 
 global apiCallName
 apiCallName = ""
+global actual_page
+actual_page = "about:blank"
 
 class Breakpoint_scriptID:
     """
@@ -71,8 +73,16 @@ def get_targets(targets) -> None:
         report_json.append(node.to_dict())
 
         # Call the page functions if target is a page
-    if node.type == "page":
-        store_page_id(node)
+        if node.type == "page":
+            # Create a page node
+            report_json.append(Page.PageNode(
+                "pageID",
+                node.targetID, 
+                node.url,
+                "", # There is no loader ID in this case
+                timeUtils.generate_timestamp()).to_dict())
+            # Store the page ID
+            store_page_id(node)
 
 def target_created(target) -> None:
 
@@ -161,6 +171,10 @@ def page_navigated(page) -> None:
         frame["loaderId"], # Network ID
         timeUtils.generate_timestamp()
     )
+
+    # Update the actual_page variable
+    global actual_page
+    actual_page = frame["url"]
     # Add the node to the report
     report_json.append(node.to_dict())
 
@@ -173,6 +187,10 @@ async def page_associate_id() -> None:
     for node in report_json:
         if node["nodeType"] == "page":
             node["pageID"] = page_IDs[node["url"]]
+        # Update the targetUrl of the network nodes
+        elif node["nodeType"] == "network":
+            if node["targetUrl"] in page_IDs.keys():
+                node["targetUrl"] = page_IDs[node["targetUrl"]]
 
 #---------------------------- NETWORK FUNCTIONS --------------------------
 
@@ -214,9 +232,11 @@ def request_sent(request) -> None:
     """
     This function is called when a new request is sent, saving the request info.
     """
+    global actual_page
+
     node = Network.NetworkNode(
         request["requestId"],
-        request["documentURL"],
+        page_IDs[actual_page],
         request["request"]["url"],
         request.get("frameId", None),
         get_initiator(request),
