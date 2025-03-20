@@ -84,17 +84,23 @@ def create_graph(report: dict):
             try:
                 if "page" in node["initiator"]:
                     graph.add_edge(node["senderUrl"], node["requestID"])
+                elif "script" in node["initiator"]:
+                    graph.add_edge(node["initiator"], node["requestID"])
                 
                 if "page" in node["targetUrl"]:
                     graph.add_edge(node["requestID"], node["targetUrl"])
                 else: 
+                    scriptID = None
                     for node2 in report:
                         if (node2["nodeType"] == "script") and (node["targetUrl"] == node2["url"]) \
                         and (node["timestamp"] < node2["timestamp"]):
-                            graph.add_edge(node["requestID"], node2["scriptID"])
+                            scriptID = node2["scriptID"]
+                            graph.add_edge(node["requestID"], scriptID)
                             break
-                
-                
+                    
+                    if scriptID == None:
+                        graph.add_edge(node["requestID"], node["targetUrl"])
+                        
             except Exception as e:
                 print(e)
                 pass

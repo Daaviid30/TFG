@@ -191,6 +191,9 @@ async def page_associate_id() -> None:
         elif node["nodeType"] == "network":
             if node["targetUrl"] in page_IDs.keys():
                 node["targetUrl"] = page_IDs[node["targetUrl"]]
+        elif node["nodeType"] == "executionContext":
+            if node["pageID"] in page_IDs.keys():
+                node["pageID"] = page_IDs[node["pageID"]]
 
 #---------------------------- NETWORK FUNCTIONS --------------------------
 
@@ -300,11 +303,13 @@ def execution_context_created(execution_context) -> None:
     """
     This function is called when a new execution context is created, saving the execution context info.
     """
+    global actual_page
+
     context = execution_context["context"]
     node = ExecutionContext.ExecutionContextNode(
         context["id"],
         context["origin"], # URL
-        next(reversed(page_IDs.values())), # Last page active
+        actual_page,
         context["name"],
         get_execution_context_type(context),
         get_execution_context_frameID(context),
