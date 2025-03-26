@@ -51,19 +51,22 @@ def create_graph(report: dict):
             try:
                 # Add edge from target (frameID) to page
                 graph.add_edge(node["frameID"], node["pageID"], label="loads")
-            except:
+            except Exception as e:
+                print("Page edge creation error" + e)
                 pass
         elif type == "executionContext":
             try:
                 # Add edge from page to executionContext
                 graph.add_edge(node["pageID"], node["executionContextID"], label="spawns")
-            except:
+            except Exception as e:
+                print("Execution Context edge creation error" + e)
                 pass
         elif type == "extension":
             try:
                 # Add edge from executionContext to extension
                 graph.add_edge(node["executionContextID"], node["extensionID"], label="belongsTo")
-            except:
+            except Exception as e:
+                print("Extension edge creation error" + e)
                 pass
         elif type == "script":
             try:
@@ -71,22 +74,26 @@ def create_graph(report: dict):
                 graph.add_edge(node["executionContextID"], node["scriptID"], label="executes")
                 if node["initiator"]:
                     graph.add_edge(node["initiator"], node["scriptID"], label="triggers")
-            except:
+            except Exception as e:
+                print("Script edge creation error" + e)
                 pass
         elif type == "domElement":
             try:
                 graph.add_edge(node["initiator"], node["elementID"], label="inserts")
-            except:
+            except Exception as e:
+                print("DOM Element edge creation error" + e)
                 pass
         elif type == "apiCall":
             try:
-                graph.add_edge(node["scriptID"], node["apiCall"], "invokes")
-            except:
+                graph.add_edge(node["scriptID"], node["apiCall"], label="invokes")
+            except Exception as e:
+                print("Api Call edge creation error" + e)
                 pass
         elif type == "eventListener":
             try:
-                graph.add_edge(node["scriptID"], node["type"], "attaches")
-            except:
+                graph.add_edge(node["scriptID"], node["type"], label="attaches")
+            except Exception as e:
+                print("Event Listener edge creation error" + e)
                 pass
         elif type == "network":
             try:
@@ -110,7 +117,7 @@ def create_graph(report: dict):
                         graph.add_edge(node["requestID"], node["targetUrl"], label="loads")
                         
             except Exception as e:
-                print(e)
+                print("Network edge creation error" + e)
                 pass
             
 
