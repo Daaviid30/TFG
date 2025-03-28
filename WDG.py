@@ -2,6 +2,8 @@ import dearpygui.dearpygui as dpg
 from tkinter import filedialog
 import tkinter as tk
 import os
+import asyncio
+from main import main
 
 # === Funciones ===
 
@@ -25,6 +27,7 @@ def execute_analysis():
 
     # Aquí irá tu lógica de análisis
     dpg.set_value("status_text", "Analizando...")
+    asyncio.run(main(file_path))
     # Simulación de análisis...
     dpg.set_value("status_text", "Análisis completado correctamente.")
 
