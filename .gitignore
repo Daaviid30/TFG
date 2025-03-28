@@ -5,3 +5,4 @@ user_data_dir
 imagenes_traza
 __pycache__
 webGraph.gexf
+chrome-extension-directory

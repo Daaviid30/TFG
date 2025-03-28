@@ -37,3 +37,25 @@ def remove_user_data() -> None:
         print(f"{greenColour}[+]{endColour}{grayColour} User data directory removed{endColour}")
     except:
         print(f"{redColour}[!]{endColour}{grayColour} Previous user data directory not exist{endColour}")
+
+def decompress_extension(extension_path) -> None:
+
+    """
+    This function tries to decompress the extension file.
+    """
+    try:
+        shutil.unpack_archive(extension_path, paths.get_actual_path() + "\\chrome-extension-directory")
+        print(f"{greenColour}[+]{endColour}{grayColour} Extension decompressed{endColour}")
+    except:
+        print(f"{redColour}[!]{endColour}{grayColour} Extension not decompressed{endColour}")
+
+def remove_extension() -> None:
+
+    """
+    This function tries to remove the extension directory.
+    """
+    try:
+        shutil.rmtree(paths.get_extension_path())
+        print(f"{greenColour}[+]{endColour}{grayColour} Extension removed{endColour}")
+    except:
+        print(f"{redColour}[!]{endColour}{grayColour} Extension not removed{endColour}")

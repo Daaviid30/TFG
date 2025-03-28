@@ -48,15 +48,7 @@ def get_extension_path() -> str:
     Return the path where the extension is stored.
     """
 
-    directory_ls = os.listdir(get_actual_path()) # List the files in the current directory
-
-    # Search for the extension 
-    for file in directory_ls:
-        if "Chrome-Web-Store" in file:
-            extension_path = get_actual_path() + "\\" + file
-            break
-
-    if not extension_path:
-        raise Exception("[!] Extension not found")
+    actual_path = get_actual_path()
+    extension_path = actual_path + "\\chrome-extension-directory"
     
     return extension_path

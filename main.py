@@ -30,8 +30,10 @@ print(f"{greenColour}[+]{endColour}{grayColour} Starting program...{endColour}")
 timeUtils.start_time = timeUtils.get_current_time()
 
 
-async def run(playwright: Playwright) -> None:
+async def run(playwright: Playwright, extension_path: str) -> None:
 
+    # Descompress the extension
+    fileUtils.decompress_extension(extension_path)
     # Create a new browser context
     context = await playwright.chromium.\
         launch_persistent_context(paths.get_user_data_path(), headless=False, \
@@ -104,6 +106,9 @@ async def run(playwright: Playwright) -> None:
     # Generation of the json report
     await cdpUtils.generate_json_report()
 
+    # Remove the extension
+    fileUtils.remove_extension()
+
     # Generation of Web Graph
     print(f"{greenColour}[+]{endColour}{grayColour} Creating Web Graph...{endColour}")
     create_graph(cdpUtils.report_json)
@@ -114,8 +119,6 @@ async def run(playwright: Playwright) -> None:
 
 #--------------------------- MAIN FUNCTION CALL --------------------------
 
-async def main():
+async def main(extension_path: str):
     async with async_playwright() as playwright:
-        await run(playwright)
-
-asyncio.run(main())
+        await run(playwright, extension_path)
