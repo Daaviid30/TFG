@@ -216,8 +216,8 @@ def get_initiator(request) -> str:
                 callFrame = stack.get("callFrames", None)[0]
                 if callFrame:
                     script_id = callFrame.get("scriptId", None)
-            if script_id:
-                return "script" + script_id
+                    if script_id:
+                        return "script" + script_id
         else: # If we do not found any of the previous data, we use the requester url as initiator
             return initiator.get("url", request["documentURL"])
     return request["documentURL"]
