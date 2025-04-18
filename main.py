@@ -33,7 +33,10 @@ timeUtils.start_time = timeUtils.get_current_time()
 async def run(playwright: Playwright, extension_path: str) -> None:
 
     # Descompress the extension
-    fileUtils.decompress_extension(extension_path)
+    if extension_path.endswith(".crx"):
+        crx_zip = fileUtils.decompress_crx(extension_path)
+    else:
+        fileUtils.decompress_extension(extension_path)
     # Create a new browser context
     context = await playwright.chromium.\
         launch_persistent_context(paths.get_user_data_path(), headless=False, \
@@ -108,6 +111,9 @@ async def run(playwright: Playwright, extension_path: str) -> None:
 
     # Remove the extension
     fileUtils.remove_extension()
+    # Remove the crx.zip file (if it exists)
+    if extension_path.endswith(".crx"):
+        fileUtils.remove_crx_zip(crx_zip)
 
     # Generation of Web Graph
     print(f"{greenColour}[+]{endColour}{grayColour} Creating Web Graph...{endColour}")

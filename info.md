@@ -25,3 +25,8 @@ torch_geometric
 gephi.org
 
 scikit-network
+
+
+### REFERENCIAS EN LA MEMORIA:
+
+https://github.com/Poikilos/uncrx/blob/master/uncrx.py
