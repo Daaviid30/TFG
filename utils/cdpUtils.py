@@ -175,6 +175,8 @@ def page_navigated(page) -> None:
     # Update the actual_page variable
     global actual_page
     actual_page = frame["url"]
+    # We also store the page ID here (this is because sometimes the target URL is compose)
+    store_page_id(node)
     # Add the node to the report
     report_json.append(node.to_dict())
 
