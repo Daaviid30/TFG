@@ -1,13 +1,28 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Insertar nodo en el DOM con Geolocalización</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio de Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <button id="boton-insertar">Insertar nodo</button>
-  <div id="contenedor"></div>
-
-  <script src="script.js"></script>
-  <script src="apiCall.js"></script>
+  <div class="login-container">
+    <h2>Iniciar Sesión</h2>
+    <form action="login.php" method="post">
+      <input type="text" name="username" placeholder="Usuario" required>
+      <input type="password" name="password" placeholder="Contraseña" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <?php if (isset($_GET['error'])): ?>
+      <p class="error">Usuario o contraseña incorrectos</p>
+    <?php endif; ?>
+  </div>
+  <footer>
+    <p>&copy; <?php echo date('Y'); ?> Recetario Elegante</p>
+  </footer>
 </body>
 </html>
+
