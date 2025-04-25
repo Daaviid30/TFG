@@ -25,6 +25,11 @@ def remove_report() -> None:
     except:
         print(f"{redColour}[!]{endColour}{grayColour} Previous report file not exist{endColour}")
 
+    try:
+        os.remove(paths.get_report_without_extension_path())
+    except:
+        pass
+
 
 def remove_user_data() -> None:
 

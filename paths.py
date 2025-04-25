@@ -31,6 +31,16 @@ def get_report_path() -> str:
 
     return report_path
 
+def get_report_without_extension_path() -> str:
+
+    """
+    Returns the path where the report_without_extension.json file will be stored.
+    """
+    actual_path = get_actual_path()
+    report_path = actual_path + "\\report_without_extension.json"
+
+    return report_path
+
 def get_user_data_path() -> str:
 
     """

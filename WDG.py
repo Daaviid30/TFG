@@ -5,8 +5,6 @@ import os
 import asyncio
 from main import main
 
-# === Funciones ===
-
 def select_file_callback():
     root = tk.Tk()
     root.withdraw()
@@ -25,24 +23,19 @@ def execute_analysis():
         dpg.set_value("status_text", "Error: Selecciona un archivo válido primero.")
         return
 
-    # Aquí irá tu lógica de análisis
     dpg.set_value("status_text", "Analizando...")
     asyncio.run(main(file_path))
-    # Simulación de análisis...
     dpg.set_value("status_text", "Análisis completado correctamente.")
 
-# === Inicio ===
 
 dpg.create_context()
 
-# Fuente personalizada (Segoe UI de Windows)
 with dpg.font_registry():
     try:
         default_font = dpg.add_font("C:\\Windows\\Fonts\\segoeui.ttf", 18)
     except:
         default_font = None
 
-# Tema moderno y minimalista
 with dpg.theme() as custom_theme:
     with dpg.theme_component(dpg.mvAll):
         dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 10)
@@ -54,16 +47,13 @@ with dpg.theme() as custom_theme:
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (100, 100, 100, 255))
         dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (120, 120, 120, 255))
 
-# Viewport
 dpg.create_viewport(title="Analizador de Extensiones", width=1000, height=700, resizable=True)
 
-# Ventana principal
 with dpg.window(tag="main_window", no_title_bar=True, no_resize=True, no_move=True,
                 pos=(0, 0), width=1000, height=700):
     with dpg.tab_bar():
 
-        # TAB 1 - Análisis
-        with dpg.tab(label="🔧 Análisis de Extensión"):
+        with dpg.tab(label="Análisis de Extensión"):
             dpg.add_spacer(height=20)
             dpg.add_text("Selecciona una extensión (.crx o .zip)", bullet=True)
             dpg.add_button(label="Seleccionar archivo", callback=select_file_callback, width=220)
@@ -74,12 +64,10 @@ with dpg.window(tag="main_window", no_title_bar=True, no_resize=True, no_move=Tr
             dpg.add_text("Estado:")
             dpg.add_text("Esperando archivo...", tag="status_text")
 
-        # TAB 2 - Resultados
         with dpg.tab(label="Resultados del Análisis"):
             dpg.add_text("Aquí se mostrarán los resultados del análisis.")
             dpg.add_spacer(height=10)
 
-# Auto-resize con el viewport
 def resize_main_window():
     width = dpg.get_viewport_client_width()
     height = dpg.get_viewport_client_height()
@@ -87,7 +75,6 @@ def resize_main_window():
     dpg.set_item_height("main_window", height)
     dpg.set_item_pos("main_window", (0, 0))
 
-# Chequeo en loop
 def check_viewport_resize():
     global last_w, last_h
     w = dpg.get_viewport_client_width()
@@ -96,7 +83,6 @@ def check_viewport_resize():
         resize_main_window()
         last_w, last_h = w, h
 
-# === Lanzar UI ===
 last_w, last_h = 0, 0
 dpg.setup_dearpygui()
 

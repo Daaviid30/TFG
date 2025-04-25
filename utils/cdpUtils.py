@@ -42,13 +42,17 @@ a report that we can analyze later.
 """
 report_json = [] # List of dictionaries that contains all the nodes
 
-async def generate_json_report() -> None:
+async def generate_json_report(extension:bool) -> None:
 
     await page_associate_id()
     await initiator_associate_page()
 
-    with open("report.json", "w") as report:
-        json.dump(report_json, report, indent=4)
+    if extension:
+        with open("report.json", "w") as report:
+            json.dump(report_json, report, indent=4)
+    else:
+        with open("report_without_extension.json", "w") as report:
+            json.dump(report_json, report, indent=4)
 
 #---------------------------- TARGET FUNCTIONS --------------------------
 
