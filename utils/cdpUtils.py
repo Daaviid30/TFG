@@ -255,8 +255,10 @@ def request_sent(request) -> None:
         timeUtils.generate_timestamp()
     )
 
-    # Add the node to the report
-    report_json.append(node.to_dict())
+    discarted_url = ["fonts.googleapis.com", "fonts.gstatic.com", "favicon.ico"]
+    if not any(discard in node.targetUrl for discard in discarted_url):
+        # Add the node to the report if the url is not discarted
+        report_json.append(node.to_dict())
 
 #------------------------- EXTENSION FUNCTIONS ----------------------------
 
