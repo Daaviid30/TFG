@@ -24,6 +24,9 @@ global apiCallName
 apiCallName = ""
 global actual_page
 actual_page = "about:blank"
+# We save the execution context of playwright to discard the scripts on that context
+global playwright_execution_context
+playwright_execution_context = None
 
 class Breakpoint_scriptID:
     """
@@ -310,6 +313,7 @@ def execution_context_created(execution_context) -> None:
     This function is called when a new execution context is created, saving the execution context info.
     """
     global actual_page
+    global playwright_execution_context
 
     context = execution_context["context"]
     node = ExecutionContext.ExecutionContextNode(
@@ -322,7 +326,10 @@ def execution_context_created(execution_context) -> None:
         timeUtils.generate_timestamp()
     )
     # Add the node to the report
-    report_json.append(node.to_dict())
+    if node.name == "__playwright_utility_world__":
+        playwright_execution_context = node.executionContextID
+    else:
+        report_json.append(node.to_dict())
 
     # Call the extension functions
     if is_extension(node):
@@ -361,7 +368,8 @@ def script_parsed(script) -> None:
     )
 
     # Add the node to the report
-    report_json.append(node.to_dict())
+    if node.executionContextID != playwright_execution_context:
+        report_json.append(node.to_dict())
 
 #---------------------------- DOM FUNCTIONS -----------------------------
 
