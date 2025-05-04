@@ -11,11 +11,6 @@ import asyncio
 #--------------------- FUNCTIONS ---------------------------
 
 async def actions_on_web(page: Page):
-    
-    await page.goto("https://cosec.inf.uc3m.es")
-
-    await asyncio.sleep(2)
-
     # Navegar a la página inicial
     await page.goto("http://localhost:8080/index.html")
 

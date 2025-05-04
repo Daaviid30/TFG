@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
+
+#---------------------- PRE-PROCESSING ------------------------------
+
 def process_attributes(df):
     numeric_cols = []
     categorical_cols = []
@@ -70,6 +73,22 @@ def graph_to_data_full(G, label):
     y = torch.tensor([label], dtype=torch.long)
 
     return Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
+
+
+# Carga de grafos
+paths_labels = [
+    ("/mnt/data/webGraphWithoutExtension.gexf", 0),  # Benigno
+    ("/mnt/data/webGraph.gexf", 1),                 # Malicioso
+    ("/mnt/data/graph_diff.gexf", 1),               # Malicioso (solo diff)
+]
+
+dataset = []
+for path, label in paths_labels:
+    G = nx.read_gexf(path)
+    data = graph_to_data_full(G, label)
+    dataset.append(data)
+
+print(f"{len(dataset)} grafos convertidos con nodos+aristas ✅")
 
 
 #------------------------- MODELO ------------------------------------
@@ -171,21 +190,3 @@ labels, preds = evaluate(model, test_loader)
 
 print("\n📊 Classification Report:")
 print(classification_report(labels, preds, target_names=['Benigno', 'Malicioso']))
-
-
-
-
-# Ejemplo de uso con tus grafos
-paths_labels = [
-    ("/mnt/data/webGraphWithoutExtension.gexf", 0),  # Benigno
-    ("/mnt/data/webGraph.gexf", 1),                 # Malicioso
-    ("/mnt/data/graph_diff.gexf", 1),               # Malicioso (solo diff)
-]
-
-dataset = []
-for path, label in paths_labels:
-    G = nx.read_gexf(path)
-    data = graph_to_data_full(G, label)
-    dataset.append(data)
-
-print(f"{len(dataset)} grafos convertidos con nodos+aristas ✅")
