@@ -12,6 +12,10 @@ import asyncio
 
 async def actions_on_web(page: Page):
     
+    await page.goto("https://cosec.inf.uc3m.es")
+
+    await asyncio.sleep(2)
+
     # Navegar a la página inicial
     await page.goto("http://localhost:8080/index.html")
 
@@ -37,9 +41,3 @@ async def actions_on_web(page: Page):
 
     # Hacer clic en "Cerrar sesión"
     await page.click("text=Cerrar sesión")
-
-    await asyncio.sleep(1)
-
-    await page.goto("https://cosec.inf.uc3m.es")
-
-    await asyncio.sleep(1)

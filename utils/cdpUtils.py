@@ -422,18 +422,21 @@ async def event_listener_detected(cdp_session, object_id) -> None:
 
     for object in object_id:
 
-        event_listeners = await cdp_session.send("DOMDebugger.getEventListeners", {"objectId": object})
-        for event_listener in event_listeners["listeners"]:
-            node = EventListener.EventListenerNode(
-                event_listener["type"],
-                event_listener["useCapture"],
-                event_listener["once"],
-                event_listener["scriptId"],
-                timeUtils.generate_timestamp()
+        try:
+            event_listeners = await cdp_session.send(
+                "DOMDebugger.getEventListeners", {"objectId": object}
             )
-
-            # Add the node to the report
-            report_json.append(node.to_dict())
+            for event_listener in event_listeners.get("listeners", []):
+                node = EventListener.EventListenerNode(
+                    event_listener["type"],
+                    event_listener["useCapture"],
+                    event_listener["once"],
+                    event_listener["scriptId"],
+                    timeUtils.generate_timestamp(),
+                )
+                report_json.append(node.to_dict())
+        except Exception as e:
+            pass
 
 #-------------------------- API CALLS FUNCTIONS --------------------------
 
