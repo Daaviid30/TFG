@@ -40,6 +40,6 @@ async def actions_on_web(page: Page):
 
     await asyncio.sleep(1)
 
-    await page.goto("cosec.inf.uc3m.es")
+    await page.goto("https://cosec.inf.uc3m.es")
 
     await asyncio.sleep(1)
