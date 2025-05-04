@@ -37,3 +37,9 @@ async def actions_on_web(page: Page):
 
     # Hacer clic en "Cerrar sesión"
     await page.click("text=Cerrar sesión")
+
+    await asyncio.sleep(1)
+
+    await page.goto("cosec.inf.uc3m.es")
+
+    await asyncio.sleep(1)
