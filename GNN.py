@@ -71,6 +71,110 @@ def graph_to_data_full(G, label):
 
     return Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
 
+
+#------------------------- MODELO ------------------------------------
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn import NNConv, global_mean_pool
+
+class GNNMalwareDetector(nn.Module):
+    def __init__(self, node_feat_dim, edge_feat_dim, hidden_dim=64):
+        super(GNNMalwareDetector, self).__init__()
+
+        # Red pequeña para transformar edge_attr ➔ weights para NNConv
+        self.edge_mlp = nn.Sequential(
+            nn.Linear(edge_feat_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, node_feat_dim * hidden_dim)
+        )
+
+        # NNConv usa edge_attr para pesar la agregación
+        self.conv1 = NNConv(node_feat_dim, hidden_dim, self.edge_mlp, aggr='mean')
+        self.conv2 = NNConv(hidden_dim, hidden_dim, self.edge_mlp, aggr='mean')
+
+        # Clasificador final
+        self.lin = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, 2)  # 2 clases: benigno o malicioso
+        )
+
+    def forward(self, data):
+        x, edge_index, edge_attr, batch = data.x, data.edge_index, data.edge_attr, data.batch
+
+        x = F.relu(self.conv1(x, edge_index, edge_attr))
+        x = F.relu(self.conv2(x, edge_index, edge_attr))
+
+        x = global_mean_pool(x, batch)  # Pooling global por grafo
+
+        out = self.lin(x)
+        return out
+
+#----------------------------- TRAINING -----------------------------
+from torch_geometric.loader import DataLoader
+from sklearn.metrics import classification_report
+
+def train(model, loader, optimizer, criterion):
+    model.train()
+    total_loss = 0
+    for data in loader:
+        optimizer.zero_grad()
+        out = model(data)
+        loss = criterion(out, data.y)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    return total_loss / len(loader)
+
+def evaluate(model, loader):
+    model.eval()
+    all_preds = []
+    all_labels = []
+    with torch.no_grad():
+        for data in loader:
+            out = model(data)
+            preds = out.argmax(dim=1).cpu().numpy()
+            labels = data.y.cpu().numpy()
+            all_preds.extend(preds)
+            all_labels.extend(labels)
+    return all_labels, all_preds
+
+
+#------------------------- PRECISION --------------------------------
+# Dataset: ya lo tienes cargado como `dataset` ✅
+# OJO: si quieres más datos, añade más grafos a `dataset`
+
+from sklearn.model_selection import train_test_split
+
+# Split train/test (80% train, 20% test)
+train_dataset, test_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
+
+train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=2)
+
+# Modelo
+node_feat_dim = dataset[0].x.shape[1]
+edge_feat_dim = dataset[0].edge_attr.shape[1]
+
+model = GNNMalwareDetector(node_feat_dim, edge_feat_dim)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+criterion = nn.CrossEntropyLoss()
+
+# Entrenamiento
+for epoch in range(20):  # 20 epochs
+    loss = train(model, train_loader, optimizer, criterion)
+    print(f"Epoch {epoch+1}, Loss: {loss:.4f}")
+
+# Evaluación
+labels, preds = evaluate(model, test_loader)
+
+print("\n📊 Classification Report:")
+print(classification_report(labels, preds, target_names=['Benigno', 'Malicioso']))
+
+
+
+
 # Ejemplo de uso con tus grafos
 paths_labels = [
     ("/mnt/data/webGraphWithoutExtension.gexf", 0),  # Benigno
