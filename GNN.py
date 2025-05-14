@@ -90,6 +90,7 @@ skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 print("Distribución de clases:", Counter(labels))
 
+accuracies = []
 for fold, (train_idx, test_idx) in enumerate(skf.split(data_list, labels)):
     print(f"\n--- Fold {fold+1} ---")
 
@@ -130,3 +131,15 @@ for fold, (train_idx, test_idx) in enumerate(skf.split(data_list, labels)):
         loss = train()
         acc = test(test_loader)
         print(f"Epoch {epoch}, Loss: {loss:.4f}, Test Accuracy: {acc:.4f}")
+
+    acc = test(test_loader)
+    accuracies.append(acc)
+    print(f"Precisión del Fold {fold+1}: {acc:.4f}")
+
+
+print(f"\nPrecisión media en los 5 folds: {sum(accuracies)/len(accuracies):.4f}")
+
+torch.save(model.state_dict(), "gnn_model.pth")
+import pickle
+with open("attr_names.pkl", "wb") as f:
+    pickle.dump(attr_names, f)
