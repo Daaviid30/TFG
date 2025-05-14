@@ -12,7 +12,7 @@ import asyncio
 
 async def actions_on_web(page: Page):
     # Navegar a la página inicial
-    await page.goto("http://localhost:8080/index.html")
+    await page.goto("http://localhost:8080/index.html", wait_until="domcontentloaded")
 
     await page.wait_for_event("close", timeout=0)
 

@@ -81,3 +81,4 @@ def predict(path_gexf, model_path="gnn_model.pth", attr_path="attr_names.pkl"):
     print(f"Archivo: {path_gexf}")
     print(f"Predicción: {clase}")
     print(f"Probabilidades: assistant={prob[0]:.4f}, other={prob[1]:.4f}")
+    return clase, round(prob[0], 4), round(prob[1], 4)

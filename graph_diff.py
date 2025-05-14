@@ -1,7 +1,7 @@
 import networkx as nx
 
 
-def graph_diff():
+def graph_diff(selected_output_dir):
     # Load the graphs
     G1 = nx.read_gexf("webGraphWithoutExtension.gexf")
     G2 = nx.read_gexf("webGraph.gexf")
@@ -23,4 +23,4 @@ def graph_diff():
             G_diff.add_edge(u, v, **G2.edges[u, v])
 
     # Save the graph
-    nx.write_gexf(G_diff, "graphs/other-extensions/graph2.gexf")
+    nx.write_gexf(G_diff, selected_output_dir + "\webGraphDiff.gexf")

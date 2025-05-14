@@ -33,7 +33,7 @@ print(f"{greenColour}[+]{endColour}{grayColour} Starting program...{endColour}")
 timeUtils.start_time = timeUtils.get_current_time()
 
 
-async def run(playwright: Playwright, extension_path: str) -> None:
+async def run(playwright: Playwright, extension_path: str, selected_output_dir: str) -> None:
 
     # Descompress the extension
     if extension_path.endswith(".crx"):
@@ -118,7 +118,7 @@ async def run(playwright: Playwright, extension_path: str) -> None:
 
     # Generation of Web Graph
     print(f"{greenColour}[+]{endColour}{grayColour} Creating Web Graph...{endColour}")
-    create_graph(cdpUtils.report_json, True)
+    create_graph(cdpUtils.report_json, True, selected_output_dir)
     print(f"{greenColour}[+]{endColour}{grayColour} Web Graph finished{endColour}")
     
 
@@ -197,12 +197,13 @@ async def run_without_extension(playwright: Playwright) -> None:
     await cdpUtils.generate_json_report(False)
 
     # Generation of Web Graph
-    create_graph(cdpUtils.report_json, False)
+    create_graph(cdpUtils.report_json, False, None)
 
 #--------------------------- MAIN FUNCTION CALL --------------------------
 
-async def main(extension_path: str):
+async def main(extension_path: str, selected_output_dir: str):
     # We start a local page as a testing web
+    await asyncio.sleep(2)
     php_server = subprocess.Popen(
         ["php", "-S", "127.0.0.1:8080", "-t", "web_page"],
         stdout=subprocess.PIPE,
@@ -211,9 +212,9 @@ async def main(extension_path: str):
 
     try:
         async with async_playwright() as playwright:
-            await run(playwright, extension_path)
+            await run(playwright, extension_path, selected_output_dir)
             await run_without_extension(playwright)
-        graph_diff()
+        graph_diff(selected_output_dir)
 
     finally:
         print("acabando servidor php")

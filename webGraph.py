@@ -10,7 +10,7 @@ import networkx as nx
 
 #--------------------------- GRAPH CREATION ------------------------------
 
-def create_graph(report: dict, extension:bool):
+def create_graph(report: dict, extension:bool, selected_output_dir: str):
     # Create a directed graph
     graph = nx.DiGraph()
     # Adding all the nodes to the graph
@@ -123,6 +123,7 @@ def create_graph(report: dict, extension:bool):
 
     # Export the graph to a gexf file (for Gephi visualitation)
     if extension:
+        nx.write_gexf(graph, selected_output_dir + "\webGraph.gexf")
         nx.write_gexf(graph, "webGraph.gexf")
         return graph
     else:
