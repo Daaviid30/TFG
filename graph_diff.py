@@ -23,4 +23,4 @@ def graph_diff():
             G_diff.add_edge(u, v, **G2.edges[u, v])
 
     # Save the graph
-    nx.write_gexf(G_diff, "graph_diff.gexf")
+    nx.write_gexf(G_diff, "graphs/other-extensions/graph2.gexf")

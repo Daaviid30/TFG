@@ -30,3 +30,38 @@ scikit-network
 ### REFERENCIAS EN LA MEMORIA:
 
 https://github.com/Poikilos/uncrx/blob/master/uncrx.py
+
+
+# LISTAS DE EXTENSIONES MALIGNAS:
+
+Blipshot: one click full page screenshots
+
+Emojis Emoji Keyboard
+
+WAToolkit
+
+Color Changer for YouTube
+
+Video Effects for YouTube and Audio Enhancer
+
+Themes for Chrome and YouTube Picture in Picture
+
+Mike Adblock für Chrome | Chrome-Werbeblocker
+
+Page Refresh
+
+Wistia Video downloaded
+
+Super dark Pode
+
+Emoji keyboard emojis for Chrome
+
+Adblocker for Chrome NoAds
+
+Adblock for You
+
+Adblock for Chrome
+
+Nimble Capture
+
+KProxy

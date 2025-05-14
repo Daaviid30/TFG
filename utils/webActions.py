@@ -14,7 +14,9 @@ async def actions_on_web(page: Page):
     # Navegar a la página inicial
     await page.goto("http://localhost:8080/index.html")
 
-    await asyncio.sleep(2)
+    await page.wait_for_event("close", timeout=0)
+
+    """ await asyncio.sleep(2)
 
     # Rellenar formulario de login
     await page.fill("#username", "ana")
@@ -35,4 +37,4 @@ async def actions_on_web(page: Page):
     await asyncio.sleep(1)
 
     # Hacer clic en "Cerrar sesión"
-    await page.click("text=Cerrar sesión")
+    await page.click("text=Cerrar sesión") """

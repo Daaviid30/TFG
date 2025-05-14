@@ -1,192 +1,132 @@
+import os
+import torch
 import networkx as nx
-import torch
 from torch_geometric.data import Data
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
-
-
-#---------------------- PRE-PROCESSING ------------------------------
-
-def process_attributes(df):
-    numeric_cols = []
-    categorical_cols = []
-    for col in df.columns:
-        try:
-            df[col].astype(float)
-            numeric_cols.append(col)
-        except:
-            categorical_cols.append(col)
-
-    # numeric ➔ normalization 0-1
-    scaler = MinMaxScaler()
-    if numeric_cols:
-        numeric_feats = scaler.fit_transform(df[numeric_cols].fillna(0))
-    else:
-        numeric_feats = np.zeros((len(df), 0))
-
-    # categorical ➔ one-hot encoding
-    ohe = OneHotEncoder(sparse=False, handle_unknown='ignore')
-    if categorical_cols:
-        cat_feats = ohe.fit_transform(df[categorical_cols].fillna('missing'))
-    else:
-        cat_feats = np.zeros((len(df), 0))
-
-    # union
-    features = np.hstack([numeric_feats, cat_feats])
-    return features
-
-def graph_to_data_full(G, label):
-    # Nodes processing
-    node_attrs_list = []
-    for node, attrs in G.nodes(data=True):
-        row = attrs.copy()
-        row['node_id'] = node
-        node_attrs_list.append(row)
-    df_nodes = pd.DataFrame(node_attrs_list)
-
-    node_features = process_attributes(df_nodes.drop(columns=['node_id']))
-    x = torch.tensor(node_features, dtype=torch.float)
-
-    # Edge processing
-    edge_list = []
-    edge_attrs_list = []
-    for src, dst, attrs in G.edges(data=True):
-        edge_list.append((src, dst))
-        edge_attrs_list.append(attrs)
-
-    df_edges = pd.DataFrame(edge_attrs_list)
-
-    if not df_edges.empty:
-        edge_features = process_attributes(df_edges)
-        edge_attr = torch.tensor(edge_features, dtype=torch.float)
-    else:
-        # Void tensor if the edge has no attributes
-        edge_attr = torch.zeros((len(edge_list), 0), dtype=torch.float)
-
-    # Create edge_index
-    node_idx_map = {node: idx for idx, node in enumerate(df_nodes['node_id'])}
-    edges_idx = [[node_idx_map[src], node_idx_map[dst]] for src, dst in edge_list]
-    edge_index = torch.tensor(edges_idx, dtype=torch.long).t().contiguous()
-
-    # Label
-    y = torch.tensor([label], dtype=torch.long)
-
-    return Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
-
-
-# Carga de grafos
-paths_labels = [
-    ("/mnt/data/webGraphWithoutExtension.gexf", 0),  # Benigno
-    ("/mnt/data/webGraph.gexf", 1),                 # Malicioso
-    ("/mnt/data/graph_diff.gexf", 1),               # Malicioso (solo diff)
-]
-
-dataset = []
-for path, label in paths_labels:
-    G = nx.read_gexf(path)
-    data = graph_to_data_full(G, label)
-    dataset.append(data)
-
-print(f"{len(dataset)} grafos convertidos con nodos+aristas ✅")
-
-
-#------------------------- MODELO ------------------------------------
-import torch
-import torch.nn as nn
+from torch_geometric.loader import DataLoader
+from torch_geometric.nn import GCNConv, global_mean_pool
 import torch.nn.functional as F
-from torch_geometric.nn import NNConv, global_mean_pool
+import torch.nn as nn
+import torch.optim as optim
+from sklearn.model_selection import StratifiedKFold
+from collections import Counter
 
-class GNNMalwareDetector(nn.Module):
-    def __init__(self, node_feat_dim, edge_feat_dim, hidden_dim=64):
-        super(GNNMalwareDetector, self).__init__()
+# === Cargar dataset ===
 
-        # Red pequeña para transformar edge_attr ➔ weights para NNConv
-        self.edge_mlp = nn.Sequential(
-            nn.Linear(edge_feat_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, node_feat_dim * hidden_dim)
-        )
+assistant_dir = "graphs/assistant-extensions"
+other_dir = "graphs/other-extensions"
+paths_labels = []
 
-        # NNConv usa edge_attr para pesar la agregación
-        self.conv1 = NNConv(node_feat_dim, hidden_dim, self.edge_mlp, aggr='mean')
-        self.conv2 = NNConv(hidden_dim, hidden_dim, self.edge_mlp, aggr='mean')
+for filename in os.listdir(assistant_dir):
+    if filename.endswith(".gexf"):
+        paths_labels.append((os.path.join(assistant_dir, filename), 0))
 
-        # Clasificador final
-        self.lin = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 2)  # 2 clases: benigno o malicioso
-        )
+for filename in os.listdir(other_dir):
+    if filename.endswith(".gexf"):
+        paths_labels.append((os.path.join(other_dir, filename), 1))
+
+def collect_all_node_attributes(paths_labels):
+    attr_names = set()
+    for path, _ in paths_labels:
+        G = nx.read_gexf(path)
+        for _, attrs in G.nodes(data=True):
+            attr_names.update(attrs.keys())
+    return sorted(attr_names)
+
+def gexf_to_pyg_data(path, label, attr_names):
+    G = nx.read_gexf(path)
+    G = nx.convert_node_labels_to_integers(G)
+
+    node_features = []
+    for i in range(len(G.nodes)):
+        attrs = G.nodes[i]
+        feat = []
+        for name in attr_names:
+            val = attrs.get(name, 0.0)
+            try:
+                feat.append(float(val))
+            except:
+                feat.append(0.0)
+        node_features.append(feat)
+
+    x = torch.tensor(node_features, dtype=torch.float)
+    x = (x - x.mean(dim=0)) / (x.std(dim=0) + 1e-6)  # Normalización
+
+    edge_index = torch.tensor(list(G.edges)).t().contiguous()
+    if edge_index.numel() == 0:
+        edge_index = torch.empty((2, 0), dtype=torch.long)
+
+    y = torch.tensor([label], dtype=torch.long)
+    return Data(x=x, edge_index=edge_index, y=y)
+
+# === Procesar grafos ===
+
+attr_names = collect_all_node_attributes(paths_labels)
+data_list = [gexf_to_pyg_data(path, label, attr_names) for path, label in paths_labels]
+labels = [data.y.item() for data in data_list]
+
+# === Modelo GNN con Dropout ===
+
+class SimpleGCN(nn.Module):
+    def __init__(self, input_dim, hidden_dim=64):
+        super(SimpleGCN, self).__init__()
+        self.conv1 = GCNConv(input_dim, hidden_dim)
+        self.conv2 = GCNConv(hidden_dim, hidden_dim)
+        self.dropout = nn.Dropout(p=0.3)
+        self.lin = nn.Linear(hidden_dim, 2)
 
     def forward(self, data):
-        x, edge_index, edge_attr, batch = data.x, data.edge_index, data.edge_attr, data.batch
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+        x = F.relu(self.conv1(x, edge_index))
+        x = self.dropout(x)
+        x = F.relu(self.conv2(x, edge_index))
+        x = self.dropout(x)
+        x = global_mean_pool(x, batch)
+        return self.lin(x)
 
-        x = F.relu(self.conv1(x, edge_index, edge_attr))
-        x = F.relu(self.conv2(x, edge_index, edge_attr))
+# === Cross-Validation ===
 
-        x = global_mean_pool(x, batch)  # Pooling global por grafo
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-        out = self.lin(x)
-        return out
+print("Distribución de clases:", Counter(labels))
 
-#----------------------------- TRAINING -----------------------------
-from torch_geometric.loader import DataLoader
-from sklearn.metrics import classification_report
+for fold, (train_idx, test_idx) in enumerate(skf.split(data_list, labels)):
+    print(f"\n--- Fold {fold+1} ---")
 
-def train(model, loader, optimizer, criterion):
-    model.train()
-    total_loss = 0
-    for data in loader:
-        optimizer.zero_grad()
-        out = model(data)
-        loss = criterion(out, data.y)
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item()
-    return total_loss / len(loader)
+    train_data = [data_list[i] for i in train_idx]
+    test_data = [data_list[i] for i in test_idx]
 
-def evaluate(model, loader):
-    model.eval()
-    all_preds = []
-    all_labels = []
-    with torch.no_grad():
-        for data in loader:
+    train_loader = DataLoader(train_data, batch_size=8, shuffle=True)
+    test_loader = DataLoader(test_data, batch_size=8)
+
+    model = SimpleGCN(input_dim=train_data[0].x.shape[1]).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    criterion = nn.CrossEntropyLoss()
+
+    def train():
+        model.train()
+        total_loss = 0
+        for data in train_loader:
+            data = data.to(device)
+            optimizer.zero_grad()
             out = model(data)
-            preds = out.argmax(dim=1).cpu().numpy()
-            labels = data.y.cpu().numpy()
-            all_preds.extend(preds)
-            all_labels.extend(labels)
-    return all_labels, all_preds
+            loss = criterion(out, data.y)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        return total_loss / len(train_loader)
 
+    def test(loader):
+        model.eval()
+        correct = 0
+        for data in loader:
+            data = data.to(device)
+            out = model(data)
+            pred = out.argmax(dim=1)
+            correct += (pred == data.y).sum().item()
+        return correct / len(loader.dataset)
 
-#------------------------- PRECISION --------------------------------
-# Dataset: ya lo tienes cargado como `dataset` ✅
-# OJO: si quieres más datos, añade más grafos a `dataset`
-
-from sklearn.model_selection import train_test_split
-
-# Split train/test (80% train, 20% test)
-train_dataset, test_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
-
-train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=2)
-
-# Modelo
-node_feat_dim = dataset[0].x.shape[1]
-edge_feat_dim = dataset[0].edge_attr.shape[1]
-
-model = GNNMalwareDetector(node_feat_dim, edge_feat_dim)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-criterion = nn.CrossEntropyLoss()
-
-# Entrenamiento
-for epoch in range(20):  # 20 epochs
-    loss = train(model, train_loader, optimizer, criterion)
-    print(f"Epoch {epoch+1}, Loss: {loss:.4f}")
-
-# Evaluación
-labels, preds = evaluate(model, test_loader)
-
-print("\n📊 Classification Report:")
-print(classification_report(labels, preds, target_names=['Benigno', 'Malicioso']))
+    for epoch in range(1, 31):
+        loss = train()
+        acc = test(test_loader)
+        print(f"Epoch {epoch}, Loss: {loss:.4f}, Test Accuracy: {acc:.4f}")
